@@ -134,6 +134,12 @@ public class MainAppFrame extends JFrame {
         sidebar.add(createNavButton("👤 Guest Management", "GUESTS"));
         sidebar.add(Box.createVerticalStrut(4));
         sidebar.add(createNavButton("📅 Booking Management", "BOOKINGS"));
+        sidebar.add(Box.createVerticalStrut(4));
+        sidebar.add(createNavButton("🛏️ Rooms", "ROOMS"));
+        sidebar.add(Box.createVerticalStrut(4));
+        sidebar.add(createNavButton("💳 Billing & Payments", "BILLING"));
+        sidebar.add(Box.createVerticalStrut(4));
+        sidebar.add(createNavButton("🧹 Services", "SERVICES"));
 
         sidebar.add(Box.createVerticalGlue()); // Push items to top
 

@@ -1,0 +1,23 @@
+# Credentials and local configuration
+db.properties
+
+# Compiled Java binaries
+bin/
+target/
+*.class
+
+# IDE and Editor files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Logs and OS files
+*.log
+Thumbs.db
+
+# Agent skills and configurations
+.agents/
+skills-lock.json

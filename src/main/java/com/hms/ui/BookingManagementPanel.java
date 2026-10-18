@@ -6,9 +6,12 @@ import com.hms.dao.GuestDAO;
 import com.hms.dao.GuestDAOImpl;
 import com.hms.dao.RoomDAO;
 import com.hms.dao.RoomDAOImpl;
+import com.hms.dao.RoomHoldDAO;
+import com.hms.dao.RoomHoldDAOImpl;
 import com.hms.model.Booking;
 import com.hms.model.Guest;
 import com.hms.model.Room;
+import com.hms.model.RoomHold;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -41,6 +44,11 @@ public class BookingManagementPanel extends JPanel {
     private final BookingDAO bookingDAO;
     private final GuestDAO guestDAO;
     private final RoomDAO roomDAO;
+    private final RoomHoldDAO roomHoldDAO;
+
+    // Hold state
+    private RoomHold activeHold = null;
+    private javax.swing.Timer holdCountdownTimer = null;
 
     // Form inputs
     private JComboBox<GuestItem> guestCombo;
@@ -51,8 +59,16 @@ public class BookingManagementPanel extends JPanel {
     private JLabel lblNights;
     private JLabel lblTotalAmount;
 
+    // Hold UI Components
+    private JPanel holdCardPanel;
+    private JLabel lblHoldStatusTitle;
+    private JLabel lblHoldCountdown;
+    private JLabel lblHoldDetails;
+    private JButton btnReleaseHold;
+
     // Buttons
     private JButton btnConfirmBooking;
+    private JButton btnHoldRoom;
     private JButton btnCheckAvailability;
     private JButton btnClear;
     private JButton btnCancelBooking;
@@ -66,6 +82,7 @@ public class BookingManagementPanel extends JPanel {
         this.bookingDAO = new BookingDAOImpl();
         this.guestDAO = new GuestDAOImpl();
         this.roomDAO = new RoomDAOImpl();
+        this.roomHoldDAO = new RoomHoldDAOImpl();
 
         setLayout(new BorderLayout(15, 15));
         setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -186,7 +203,55 @@ public class BookingManagementPanel extends JPanel {
         lblTotalAmount.setForeground(new Color(39, 174, 96));
         fields.add(lblTotalAmount);
 
-        panel.add(fields, BorderLayout.NORTH);
+        JPanel centerContainer = new JPanel();
+        centerContainer.setLayout(new BoxLayout(centerContainer, BoxLayout.Y_AXIS));
+        centerContainer.setOpaque(false);
+
+        centerContainer.add(fields);
+        centerContainer.add(Box.createVerticalStrut(12));
+
+        // Hold Status Card (5-Minute Ghost Inventory Countdown)
+        holdCardPanel = new JPanel(new BorderLayout(10, 6));
+        holdCardPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(230, 126, 34), 1, true),
+                new EmptyBorder(10, 12, 10, 12)
+        ));
+        holdCardPanel.setBackground(new Color(254, 249, 231)); // Soft amber
+        holdCardPanel.setVisible(false);
+
+        JPanel holdInfo = new JPanel(new GridLayout(2, 1, 2, 2));
+        holdInfo.setOpaque(false);
+
+        lblHoldStatusTitle = new JLabel("⏱ 5-MINUTE ROOM HOLD ACTIVE");
+        lblHoldStatusTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblHoldStatusTitle.setForeground(new Color(175, 96, 26));
+
+        lblHoldDetails = new JLabel("Room held | Token: -");
+        lblHoldDetails.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblHoldDetails.setForeground(new Color(100, 70, 20));
+
+        holdInfo.add(lblHoldStatusTitle);
+        holdInfo.add(lblHoldDetails);
+        holdCardPanel.add(holdInfo, BorderLayout.CENTER);
+
+        JPanel holdRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        holdRight.setOpaque(false);
+
+        lblHoldCountdown = new JLabel("05:00");
+        lblHoldCountdown.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblHoldCountdown.setForeground(new Color(192, 57, 43));
+
+        btnReleaseHold = new JButton("Release Hold");
+        btnReleaseHold.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        btnReleaseHold.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnReleaseHold.addActionListener(e -> onReleaseHold());
+
+        holdRight.add(lblHoldCountdown);
+        holdRight.add(btnReleaseHold);
+        holdCardPanel.add(holdRight, BorderLayout.EAST);
+
+        centerContainer.add(holdCardPanel);
+        panel.add(centerContainer, BorderLayout.NORTH);
 
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 15));
@@ -196,6 +261,13 @@ public class BookingManagementPanel extends JPanel {
         btnCheckAvailability.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnCheckAvailability.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCheckAvailability.addActionListener(e -> onCheckAvailability());
+
+        btnHoldRoom = new JButton("Hold Room (5 min)");
+        btnHoldRoom.setBackground(new Color(230, 126, 34)); // Warm orange
+        btnHoldRoom.setForeground(Color.WHITE);
+        btnHoldRoom.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnHoldRoom.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnHoldRoom.addActionListener(e -> onHoldRoom());
 
         btnConfirmBooking = new JButton("Confirm Booking");
         btnConfirmBooking.setBackground(new Color(39, 174, 96));
@@ -209,6 +281,7 @@ public class BookingManagementPanel extends JPanel {
         btnClear.addActionListener(e -> clearForm());
 
         buttonPanel.add(btnCheckAvailability);
+        buttonPanel.add(btnHoldRoom);
         buttonPanel.add(btnConfirmBooking);
         buttonPanel.add(btnClear);
 
@@ -328,18 +401,174 @@ public class BookingManagementPanel extends JPanel {
             return;
         }
 
-        boolean available = bookingDAO.isRoomAvailable(selectedRoom.room.getId(), in, out);
+        String userToken = (activeHold != null && activeHold.isValid()) ? activeHold.getHoldToken() : null;
+        boolean available = bookingDAO.isRoomAvailable(selectedRoom.room.getId(), in, out, userToken);
+
         if (available) {
-            JOptionPane.showMessageDialog(this, 
-                    "Room " + selectedRoom.room.getRoomNumber() + " (" + selectedRoom.room.getRoomType() 
-                    + ") is AVAILABLE from " + in + " to " + out + "!", 
-                    "Room Available", JOptionPane.INFORMATION_MESSAGE);
+            if (activeHold != null && activeHold.isValid() 
+                    && activeHold.getRoomId() == selectedRoom.room.getId()
+                    && in.equals(activeHold.getCheckInDate()) 
+                    && out.equals(activeHold.getCheckOutDate())) {
+                JOptionPane.showMessageDialog(this, 
+                        "Room " + selectedRoom.room.getRoomNumber() + " (" + selectedRoom.room.getRoomType() 
+                        + ") is AVAILABLE from " + in + " to " + out + "!\n\n"
+                        + "👉 Status: Currently HELD by YOU (" + activeHold.getRemainingSeconds() + "s remaining on hold).\n"
+                        + "You can click 'Confirm Booking' to finalize this reservation.", 
+                        "Room Held by You", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                        "Room " + selectedRoom.room.getRoomNumber() + " (" + selectedRoom.room.getRoomType() 
+                        + ") is AVAILABLE from " + in + " to " + out + "!\n\n"
+                        + "💡 Tip: You can click 'Hold Room (5 min)' to reserve it for 5 minutes\n"
+                        + "to prevent other guests from taking it while you enter details.", 
+                        "Room Available", JOptionPane.INFORMATION_MESSAGE);
+            }
         } else {
-            JOptionPane.showMessageDialog(this, 
-                    "Room " + selectedRoom.room.getRoomNumber() 
-                    + " is NOT available for the selected dates.\n(Already booked or under maintenance).", 
-                    "Room Unavailable", JOptionPane.WARNING_MESSAGE);
+            // Check if held by another guest
+            boolean isHeldByOther = roomHoldDAO.isRoomHeld(selectedRoom.room.getId(), in, out);
+            if (isHeldByOther) {
+                JOptionPane.showMessageDialog(this, 
+                        "Room " + selectedRoom.room.getRoomNumber() 
+                        + " is currently on TEMPORARY HOLD by another guest for the selected dates.\n\n"
+                        + "Holds expire automatically in up to 5 minutes if not confirmed.\n"
+                        + "Please try again shortly or choose a different room.", 
+                        "Room Temporarily Held", JOptionPane.WARNING_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                        "Room " + selectedRoom.room.getRoomNumber() 
+                        + " is NOT available for the selected dates.\n(Already booked or under maintenance).", 
+                        "Room Unavailable", JOptionPane.WARNING_MESSAGE);
+            }
         }
+    }
+
+    private void onHoldRoom() {
+        RoomItem selectedRoom = (RoomItem) roomCombo.getSelectedItem();
+        if (selectedRoom == null) {
+            JOptionPane.showMessageDialog(this, "Please select a room to hold.", "Validation", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        LocalDate in, out;
+        try {
+            in = LocalDate.parse(checkInField.getText().trim());
+            out = LocalDate.parse(checkOutField.getText().trim());
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(this, "Please enter valid dates in YYYY-MM-DD format.", 
+                    "Invalid Date", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!out.isAfter(in)) {
+            JOptionPane.showMessageDialog(this, "Check-out date must be strictly after check-in date.", 
+                    "Invalid Dates", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (in.isBefore(LocalDate.now())) {
+            JOptionPane.showMessageDialog(this, "Check-in date cannot be in the past.", 
+                    "Invalid Dates", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // If user already has an active hold, ask to release previous hold
+        if (activeHold != null && activeHold.isValid()) {
+            int opt = JOptionPane.showConfirmDialog(this,
+                    "You already have an active hold on Room " + activeHold.getRoomNumber() + ".\n"
+                    + "Do you want to release it and hold Room " + selectedRoom.room.getRoomNumber() + " instead?",
+                    "Replace Active Hold", JOptionPane.YES_NO_OPTION);
+            if (opt != JOptionPane.YES_OPTION) {
+                return;
+            }
+            releaseActiveHoldSilently();
+        }
+
+        try {
+            RoomHold hold = roomHoldDAO.createHold(selectedRoom.room.getId(), in, out);
+            this.activeHold = hold;
+
+            // Update hold card panel
+            lblHoldStatusTitle.setText("⏱ 5-MINUTE ROOM HOLD ACTIVE");
+            lblHoldStatusTitle.setForeground(new Color(175, 96, 26));
+            lblHoldDetails.setText("Room " + selectedRoom.room.getRoomNumber() + " (" + selectedRoom.room.getRoomType() 
+                    + ") | " + in + " to " + out + " | Token: " + hold.getHoldToken());
+            lblHoldCountdown.setForeground(new Color(192, 57, 43));
+            holdCardPanel.setVisible(true);
+
+            // Start countdown timer
+            startHoldTimer();
+
+            JOptionPane.showMessageDialog(this,
+                    "Room " + selectedRoom.room.getRoomNumber() + " is now HELD for 5 minutes!\n\n"
+                    + "Hold Token: " + hold.getHoldToken() + "\n"
+                    + "Other users cannot book or hold this room for " + in + " to " + out + ".\n\n"
+                    + "Please select a guest and click 'Confirm Booking' within 5 minutes.",
+                    "Room Hold Activated", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (RoomHoldDAO.RoomHoldOverlapException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Room Unavailable", JOptionPane.WARNING_MESSAGE);
+        } catch (RoomHoldDAO.InvalidHoldDateException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid Date", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error placing hold: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void startHoldTimer() {
+        if (holdCountdownTimer != null && holdCountdownTimer.isRunning()) {
+            holdCountdownTimer.stop();
+        }
+        updateHoldCountdown();
+        holdCountdownTimer = new javax.swing.Timer(1000, e -> updateHoldCountdown());
+        holdCountdownTimer.start();
+    }
+
+    private void updateHoldCountdown() {
+        if (activeHold == null) {
+            if (holdCountdownTimer != null) holdCountdownTimer.stop();
+            holdCardPanel.setVisible(false);
+            return;
+        }
+
+        long remaining = activeHold.getRemainingSeconds();
+        if (remaining <= 0) {
+            if (holdCountdownTimer != null) holdCountdownTimer.stop();
+            lblHoldStatusTitle.setText("⚠️ ROOM HOLD EXPIRED");
+            lblHoldStatusTitle.setForeground(new Color(192, 57, 43));
+            lblHoldCountdown.setText("00:00");
+            lblHoldDetails.setText("Hold expired. The room has been released for other guests.");
+            btnReleaseHold.setEnabled(false);
+            activeHold = null;
+        } else {
+            long mins = remaining / 60;
+            long secs = remaining % 60;
+            lblHoldCountdown.setText(String.format("%02d:%02d", mins, secs));
+            btnReleaseHold.setEnabled(true);
+        }
+    }
+
+    private void onReleaseHold() {
+        if (activeHold == null) return;
+        String token = activeHold.getHoldToken();
+        String rNum = (activeHold.getRoomNumber() != null) ? activeHold.getRoomNumber() : ("Room #" + activeHold.getRoomId());
+        releaseActiveHoldSilently();
+        JOptionPane.showMessageDialog(this, 
+                "Hold on " + rNum + " (Token: " + token + ") has been released.\n"
+                + "The room is now available for other guests.", 
+                "Hold Released", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void releaseActiveHoldSilently() {
+        if (holdCountdownTimer != null && holdCountdownTimer.isRunning()) {
+            holdCountdownTimer.stop();
+        }
+        if (activeHold != null) {
+            try {
+                roomHoldDAO.releaseHold(activeHold.getHoldToken());
+            } catch (Exception ignored) {}
+            activeHold = null;
+        }
+        holdCardPanel.setVisible(false);
     }
 
     private void onConfirmBooking(ActionEvent e) {
@@ -375,15 +604,27 @@ public class BookingManagementPanel extends JPanel {
         booking.setGuestCount(guestCount);
 
         try {
-            Booking created = bookingDAO.createBooking(booking);
-            JOptionPane.showMessageDialog(this, 
-                    "Booking CONFIRMED successfully!\n\n"
+            String holdToken = (activeHold != null && activeHold.isValid()) ? activeHold.getHoldToken() : null;
+            Booking created = bookingDAO.createBooking(booking, holdToken);
+
+            // Clean up hold state on successful booking
+            if (activeHold != null) {
+                if (holdCountdownTimer != null) holdCountdownTimer.stop();
+                activeHold = null;
+                holdCardPanel.setVisible(false);
+            }
+
+            String msg = "Booking CONFIRMED successfully!\n\n"
                     + "Reference: " + created.getBookingReference() + "\n"
                     + "Guest: " + selectedGuest.guest.getFullName() + "\n"
                     + "Room: " + selectedRoom.room.getRoomNumber() + " (" + selectedRoom.room.getRoomType() + ")\n"
                     + "Dates: " + in + " to " + out + " (" + created.getNumberOfNights() + " nights)\n"
-                    + "Total Amount: ₹" + created.getTotalAmount(),
-                    "Booking Confirmed", JOptionPane.INFORMATION_MESSAGE);
+                    + "Total Amount: ₹" + created.getTotalAmount();
+            if (holdToken != null) {
+                msg += "\n\n(5-Minute Room Hold was consumed successfully)";
+            }
+
+            JOptionPane.showMessageDialog(this, msg, "Booking Confirmed", JOptionPane.INFORMATION_MESSAGE);
 
             clearForm();
             loadBookingsAsync(null);
@@ -451,6 +692,7 @@ public class BookingManagementPanel extends JPanel {
     }
 
     private void clearForm() {
+        releaseActiveHoldSilently();
         if (guestCombo.getItemCount() > 0) guestCombo.setSelectedIndex(0);
         if (roomCombo.getItemCount() > 0) roomCombo.setSelectedIndex(0);
         checkInField.setText(LocalDate.now().toString());

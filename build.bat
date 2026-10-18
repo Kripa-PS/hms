@@ -10,7 +10,7 @@ if not exist %JAVAC_CMD% (
 
 if not exist "bin" mkdir bin
 
-%JAVAC_CMD% -d bin -cp "lib/mysql-connector-j-9.1.0.jar;lib/flatlaf-3.5.4.jar" src/main/java/com/hms/model/*.java src/main/java/com/hms/dao/*.java src/main/java/com/hms/util/*.java src/main/java/com/hms/ui/*.java src/main/java/com/hms/*.java
+%JAVAC_CMD% -d bin -cp "lib/mysql-connector-j-9.1.0.jar;lib/flatlaf-3.5.4.jar" src/main/java/com/hms/model/*.java src/main/java/com/hms/dao/*.java src/main/java/com/hms/util/*.java src/main/java/com/hms/ui/*.java src/main/java/com/hms/*.java src/test/java/com/hms/model/*.java src/test/java/com/hms/dao/*.java src/test/java/com/hms/ui/*.java
 
 if %ERRORLEVEL% EQU 0 (
     echo [SUCCESS] Compilation finished with 0 errors!

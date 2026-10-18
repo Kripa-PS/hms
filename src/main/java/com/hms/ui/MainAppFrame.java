@@ -106,12 +106,6 @@ public class MainAppFrame extends JFrame {
 
         panel.add(textPanel, BorderLayout.WEST);
 
-        JButton retryDbBtn = new JButton("Test DB Connection");
-        retryDbBtn.setFocusPainted(false);
-        retryDbBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        retryDbBtn.addActionListener(e -> checkDatabaseStatusAsync());
-        panel.add(retryDbBtn, BorderLayout.EAST);
-
         return panel;
     }
 
@@ -131,28 +125,15 @@ public class MainAppFrame extends JFrame {
         sidebar.add(createNavButton("🏠 Dashboard", "WELCOME"));
         sidebar.add(Box.createVerticalStrut(6));
 
-        JLabel myModulesLabel = new JLabel("MY MODULES");
-        myModulesLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
-        myModulesLabel.setForeground(new Color(30, 100, 180));
-        myModulesLabel.setBorder(new EmptyBorder(15, 10, 6, 10));
-        sidebar.add(myModulesLabel);
+        JLabel hotelMgmtLabel = new JLabel("HOTEL MANAGEMENT");
+        hotelMgmtLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        hotelMgmtLabel.setForeground(new Color(30, 100, 180));
+        hotelMgmtLabel.setBorder(new EmptyBorder(15, 10, 6, 10));
+        sidebar.add(hotelMgmtLabel);
 
         sidebar.add(createNavButton("👤 Guest Management", "GUESTS"));
         sidebar.add(Box.createVerticalStrut(4));
         sidebar.add(createNavButton("📅 Booking Management", "BOOKINGS"));
-        sidebar.add(Box.createVerticalStrut(6));
-
-        JLabel teamModulesLabel = new JLabel("TEAM MODULES");
-        teamModulesLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
-        teamModulesLabel.setForeground(new Color(120, 130, 140));
-        teamModulesLabel.setBorder(new EmptyBorder(15, 10, 6, 10));
-        sidebar.add(teamModulesLabel);
-
-        sidebar.add(createNavButton("🛏️ Rooms", "ROOMS"));
-        sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("💳 Billing & Payments", "BILLING"));
-        sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("🧹 Services", "SERVICES"));
 
         sidebar.add(Box.createVerticalGlue()); // Push items to top
 

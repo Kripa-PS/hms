@@ -29,6 +29,11 @@ public class BookingDAOImpl implements BookingDAO {
 
     @Override
     public boolean isRoomAvailable(int roomId, LocalDate checkIn, LocalDate checkOut) {
+        return isRoomAvailable(roomId, checkIn, checkOut, null);
+    }
+
+    @Override
+    public boolean isRoomAvailable(int roomId, LocalDate checkIn, LocalDate checkOut, String currentHoldToken) {
         if (checkIn == null || checkOut == null || !checkOut.isAfter(checkIn)) {
             return false;
         }
@@ -44,7 +49,7 @@ public class BookingDAOImpl implements BookingDAO {
                 }
             }
 
-            // Overlap check query
+            // Overlap check query for confirmed / checked-in bookings
             String overlapSql = "SELECT COUNT(*) FROM bookings b "
                               + "WHERE b.room_id = ? "
                               + "  AND b.status IN ('CONFIRMED', 'CHECKED_IN') "
@@ -57,8 +62,36 @@ public class BookingDAOImpl implements BookingDAO {
                 overlapStmt.setDate(3, java.sql.Date.valueOf(checkIn));
 
                 try (ResultSet rs = overlapStmt.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        return false; // Conflicting booking exists
+                    }
+                }
+            }
+
+            // Check overlapping active, unexpired holds (excluding currentHoldToken if provided)
+            StringBuilder holdSql = new StringBuilder(
+                    "SELECT COUNT(*) FROM room_holds h "
+                  + "WHERE h.room_id = ? "
+                  + "  AND h.status = 'ACTIVE' "
+                  + "  AND h.expires_at > NOW() "
+                  + "  AND h.check_in_date < ? "
+                  + "  AND h.check_out_date > ?");
+
+            if (currentHoldToken != null && !currentHoldToken.isBlank()) {
+                holdSql.append(" AND h.hold_token != ?");
+            }
+
+            try (PreparedStatement holdStmt = conn.prepareStatement(holdSql.toString())) {
+                holdStmt.setInt(1, roomId);
+                holdStmt.setDate(2, java.sql.Date.valueOf(checkOut));
+                holdStmt.setDate(3, java.sql.Date.valueOf(checkIn));
+                if (currentHoldToken != null && !currentHoldToken.isBlank()) {
+                    holdStmt.setString(4, currentHoldToken.trim());
+                }
+
+                try (ResultSet rs = holdStmt.executeQuery()) {
                     if (rs.next()) {
-                        return rs.getInt(1) == 0; // Available if 0 overlaps
+                        return rs.getInt(1) == 0;
                     }
                 }
             }
@@ -70,6 +103,11 @@ public class BookingDAOImpl implements BookingDAO {
 
     @Override
     public Booking createBooking(Booking booking) {
+        return createBooking(booking, null);
+    }
+
+    @Override
+    public Booking createBooking(Booking booking, String holdToken) {
         // 1. Input validations
         if (booking.getCheckInDate() == null || booking.getCheckOutDate() == null) {
             throw new InvalidBookingDateException("Check-in and check-out dates are required.");
@@ -135,7 +173,7 @@ public class BookingDAOImpl implements BookingDAO {
                     }
                 }
 
-                // Step D: Re-check overlap query while holding the lock
+                // Step D: Re-check booking overlap while holding the lock
                 String overlapSql = "SELECT COUNT(*) FROM bookings "
                                   + "WHERE room_id = ? "
                                   + "  AND status IN ('CONFIRMED', 'CHECKED_IN') "
@@ -151,6 +189,85 @@ public class BookingDAOImpl implements BookingDAO {
                             conn.rollback();
                             throw new BookingOverlapException("Room " + roomNumber + " is already booked for the selected dates ("
                                     + booking.getCheckInDate() + " to " + booking.getCheckOutDate() + ").");
+                        }
+                    }
+                }
+
+                // Step D2: Check hold conflicts and validate hold ownership
+                if (holdToken != null && !holdToken.isBlank()) {
+                    // User supplied a holdToken: verify it is active, unexpired, and matches room + dates
+                    String verifyHoldSql = "SELECT id, room_id, check_in_date, check_out_date, expires_at, status "
+                                         + "FROM room_holds WHERE hold_token = ? FOR UPDATE";
+                    try (PreparedStatement vhStmt = conn.prepareStatement(verifyHoldSql)) {
+                        vhStmt.setString(1, holdToken.trim());
+                        try (ResultSet rs = vhStmt.executeQuery()) {
+                            if (!rs.next()) {
+                                conn.rollback();
+                                throw new IllegalStateException("Hold token '" + holdToken + "' was not found.");
+                            }
+                            String holdStatus = rs.getString("status");
+                            LocalDateTime expiresAt = rs.getObject("expires_at", LocalDateTime.class);
+                            int holdRoomId = rs.getInt("room_id");
+                            LocalDate holdIn = rs.getObject("check_in_date", LocalDate.class);
+                            LocalDate holdOut = rs.getObject("check_out_date", LocalDate.class);
+
+                            if (!"ACTIVE".equalsIgnoreCase(holdStatus)) {
+                                conn.rollback();
+                                throw new IllegalStateException("This room hold is no longer active (Status: " + holdStatus + ").");
+                            }
+                            if (expiresAt != null && expiresAt.isBefore(LocalDateTime.now())) {
+                                conn.rollback();
+                                throw new IllegalStateException("Your 5-minute room hold has expired. Please check availability again.");
+                            }
+                            if (holdRoomId != booking.getRoomId() 
+                                    || !holdIn.equals(booking.getCheckInDate()) 
+                                    || !holdOut.equals(booking.getCheckOutDate())) {
+                                conn.rollback();
+                                throw new IllegalArgumentException("Hold details do not match the requested booking room or dates.");
+                            }
+                        }
+                    }
+
+                    // Check that no other active hold conflicts
+                    String otherHoldSql = "SELECT COUNT(*) FROM room_holds "
+                                        + "WHERE room_id = ? "
+                                        + "  AND status = 'ACTIVE' "
+                                        + "  AND expires_at > NOW() "
+                                        + "  AND hold_token != ? "
+                                        + "  AND check_in_date < ? "
+                                        + "  AND check_out_date > ?";
+                    try (PreparedStatement ohStmt = conn.prepareStatement(otherHoldSql)) {
+                        ohStmt.setInt(1, booking.getRoomId());
+                        ohStmt.setString(2, holdToken.trim());
+                        ohStmt.setDate(3, java.sql.Date.valueOf(booking.getCheckOutDate()));
+                        ohStmt.setDate(4, java.sql.Date.valueOf(booking.getCheckInDate()));
+                        try (ResultSet rs = ohStmt.executeQuery()) {
+                            if (rs.next() && rs.getInt(1) > 0) {
+                                conn.rollback();
+                                throw new BookingOverlapException("Room " + roomNumber 
+                                        + " is currently on hold by another guest for the selected dates.");
+                            }
+                        }
+                    }
+
+                } else {
+                    // Direct booking (no holdToken): ensure no other active, unexpired hold conflicts
+                    String directHoldCheckSql = "SELECT COUNT(*) FROM room_holds "
+                                              + "WHERE room_id = ? "
+                                              + "  AND status = 'ACTIVE' "
+                                              + "  AND expires_at > NOW() "
+                                              + "  AND check_in_date < ? "
+                                              + "  AND check_out_date > ?";
+                    try (PreparedStatement dhStmt = conn.prepareStatement(directHoldCheckSql)) {
+                        dhStmt.setInt(1, booking.getRoomId());
+                        dhStmt.setDate(2, java.sql.Date.valueOf(booking.getCheckOutDate()));
+                        dhStmt.setDate(3, java.sql.Date.valueOf(booking.getCheckInDate()));
+                        try (ResultSet rs = dhStmt.executeQuery()) {
+                            if (rs.next() && rs.getInt(1) > 0) {
+                                conn.rollback();
+                                throw new BookingOverlapException("Room " + roomNumber 
+                                        + " is currently on temporary hold by another guest for the selected dates.");
+                            }
                         }
                     }
                 }
@@ -185,6 +302,15 @@ public class BookingDAOImpl implements BookingDAO {
                         if (generatedKeys.next()) {
                             booking.setId(generatedKeys.getInt(1));
                         }
+                    }
+                }
+
+                // Step H: Consume the hold if one was used
+                if (holdToken != null && !holdToken.isBlank()) {
+                    String consumeSql = "UPDATE room_holds SET status = 'CONSUMED' WHERE hold_token = ?";
+                    try (PreparedStatement consumeStmt = conn.prepareStatement(consumeSql)) {
+                        consumeStmt.setString(1, holdToken.trim());
+                        consumeStmt.executeUpdate();
                     }
                 }
 

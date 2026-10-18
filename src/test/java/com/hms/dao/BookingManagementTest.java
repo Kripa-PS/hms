@@ -60,8 +60,9 @@ public class BookingManagementTest {
 
         // Test 1: Valid Booking Creation
         System.out.print("[Test 1] Valid Booking Creation... ");
-        LocalDate in1 = LocalDate.now().plusDays(30);
-        LocalDate out1 = LocalDate.now().plusDays(33); // 3 nights
+        int offset = 30 + (int)(Math.random() * 500);
+        LocalDate in1 = LocalDate.now().plusDays(offset);
+        LocalDate out1 = in1.plusDays(3); // 3 nights
         Booking b1 = new Booking();
         b1.setGuestId(testGuest.getId());
         b1.setRoomId(testRoom.getId());
@@ -128,12 +129,12 @@ public class BookingManagementTest {
         // Test 4: Overlapping Booking Rejection
         System.out.print("[Test 4] Overlapping Booking Rejection... ");
         try {
-            // b1 is booked for days +30 to +33. We attempt days +31 to +34 (overlap!)
+            // b1 is booked for in1 to out1. We attempt in1 + 1 to out1 + 1 (overlap!)
             Booking bOverlap = new Booking();
             bOverlap.setGuestId(testGuest.getId());
             bOverlap.setRoomId(testRoom.getId());
-            bOverlap.setCheckInDate(LocalDate.now().plusDays(31));
-            bOverlap.setCheckOutDate(LocalDate.now().plusDays(34));
+            bOverlap.setCheckInDate(in1.plusDays(1));
+            bOverlap.setCheckOutDate(out1.plusDays(1));
             bOverlap.setGuestCount(1);
 
             bookingDAO.createBooking(bOverlap);
@@ -150,12 +151,12 @@ public class BookingManagementTest {
         // Test 5: Back-to-Back Booking Allowed (Check-in on check-out date of previous booking)
         System.out.print("[Test 5] Back-to-Back Booking (Check-in = Previous Check-out)... ");
         try {
-            // b1 ends on day +33. bBack starts on day +33 and ends on day +35.
+            // b1 ends on out1. bBack starts on out1 and ends on out1 + 2.
             Booking bBack = new Booking();
             bBack.setGuestId(testGuest.getId());
             bBack.setRoomId(testRoom.getId());
-            bBack.setCheckInDate(LocalDate.now().plusDays(33)); // Same as out1!
-            bBack.setCheckOutDate(LocalDate.now().plusDays(35));
+            bBack.setCheckInDate(out1); // Same as out1!
+            bBack.setCheckOutDate(out1.plusDays(2));
             bBack.setGuestCount(1);
 
             Booking createdBack = bookingDAO.createBooking(bBack);

@@ -71,6 +71,14 @@ public class RoomDAOImpl implements RoomDAO {
                    + "        AND b.check_in_date < ? "
                    + "        AND b.check_out_date > ? "
                    + "  ) "
+                   + "  AND r.id NOT IN ( "
+                   + "      SELECT h.room_id "
+                   + "      FROM room_holds h "
+                   + "      WHERE h.status = 'ACTIVE' "
+                   + "        AND h.expires_at > NOW() "
+                   + "        AND h.check_in_date < ? "
+                   + "        AND h.check_out_date > ? "
+                   + "  ) "
                    + "ORDER BY r.room_number ASC";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -78,6 +86,8 @@ public class RoomDAOImpl implements RoomDAO {
 
             stmt.setDate(1, java.sql.Date.valueOf(checkOut));
             stmt.setDate(2, java.sql.Date.valueOf(checkIn));
+            stmt.setDate(3, java.sql.Date.valueOf(checkOut));
+            stmt.setDate(4, java.sql.Date.valueOf(checkIn));
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {

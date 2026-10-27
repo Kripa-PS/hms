@@ -93,13 +93,30 @@ CREATE TABLE IF NOT EXISTS payments (
     booking_id INT NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
     payment_method ENUM('CASH', 'CARD', 'UPI') NOT NULL DEFAULT 'CASH',
-    payment_status ENUM('PAID', 'PARTIAL', 'PENDING', 'REFUNDED') NOT NULL DEFAULT 'PAID',
+    payment_status ENUM('PAID', 'PARTIAL', 'PENDING', 'REFUNDED', 'FAILED') NOT NULL DEFAULT 'PAID',
     payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     transaction_reference VARCHAR(50),
     notes VARCHAR(255),
     
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE RESTRICT,
-    INDEX idx_payment_booking (booking_id)
+    INDEX idx_payment_booking (booking_id),
+    INDEX idx_payment_txn_ref (transaction_reference)
+) ENGINE=InnoDB;
+
+-- 6b. INVOICES (Maintained by Teammate: Billing and Reports)
+CREATE TABLE IF NOT EXISTS invoices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_number VARCHAR(50) NOT NULL UNIQUE,
+    booking_id INT NOT NULL,
+    issue_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    paid_amount DECIMAL(10, 2) NOT NULL,
+    balance_due DECIMAL(10, 2) NOT NULL,
+    notes VARCHAR(255),
+    
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE RESTRICT,
+    INDEX idx_invoice_booking (booking_id),
+    INDEX idx_invoice_number (invoice_number)
 ) ENGINE=InnoDB;
 
 -- 7. HOUSEKEEPING (Maintained by Teammate: Services)

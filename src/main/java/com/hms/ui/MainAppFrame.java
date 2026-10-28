@@ -10,16 +10,16 @@ import java.awt.event.ActionEvent;
 
 /**
  * MainAppFrame
- * 
+ *
  * Main Swing Window for the Hotel Management System.
  * Uses FlatLaf for a clean, modern desktop interface on Windows.
- * 
+ *
  * Coordinates module navigation:
  * - Guests (Assigned Module)
  * - Bookings (Assigned Module)
- * - Rooms (Teammate A Placeholder)
- * - Billing (Teammate B Placeholder)
- * - Services (Teammate C Placeholder)
+ * - Rooms (Member 2 - Room Management Module)
+ * - Billing (Assigned Module)
+ * - Services (Teammate Placeholder)
  */
 public class MainAppFrame extends JFrame {
 
@@ -56,11 +56,13 @@ public class MainAppFrame extends JFrame {
         contentPanel.add(guestManagementPanel, "GUESTS");
         BookingManagementPanel bookingManagementPanel = new BookingManagementPanel();
         contentPanel.add(bookingManagementPanel, "BOOKINGS");
+        // Member 2: Room Management module
         RoomManagementPanel roomManagementPanel = new RoomManagementPanel();
         contentPanel.add(roomManagementPanel, "ROOMS");
-        contentPanel.add(createPlaceholderPanel("Billing & Payments", 
-                "Teammate Module: Invoice calculations, payments, and financial summaries."), "BILLING");
-        contentPanel.add(createPlaceholderPanel("Hotel Services", 
+        // Billing module
+        BillingAndReportsPanel billingAndReportsPanel = new BillingAndReportsPanel();
+        contentPanel.add(billingAndReportsPanel, "BILLING");
+        contentPanel.add(createPlaceholderPanel("Hotel Services",
                 "Teammate Module: Housekeeping tasks and room service orders."), "SERVICES");
 
         add(contentPanel, BorderLayout.CENTER);
@@ -75,7 +77,7 @@ public class MainAppFrame extends JFrame {
         infoLabel.setForeground(Color.GRAY);
         statusBar.add(infoLabel, BorderLayout.WEST);
 
-        dbStatusLabel = new JLabel("● Database: Checking...");
+        dbStatusLabel = new JLabel("\u25cf Database: Checking...");
         dbStatusLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         updateDbStatus(false);
         statusBar.add(dbStatusLabel, BorderLayout.EAST);
@@ -122,7 +124,7 @@ public class MainAppFrame extends JFrame {
         navTitle.setBorder(new EmptyBorder(5, 10, 10, 10));
         sidebar.add(navTitle);
 
-        sidebar.add(createNavButton("🏠 Dashboard", "WELCOME"));
+        sidebar.add(createNavButton("\uD83C\uDFE0 Dashboard", "WELCOME"));
         sidebar.add(Box.createVerticalStrut(6));
 
         JLabel hotelMgmtLabel = new JLabel("HOTEL MANAGEMENT");
@@ -131,15 +133,15 @@ public class MainAppFrame extends JFrame {
         hotelMgmtLabel.setBorder(new EmptyBorder(15, 10, 6, 10));
         sidebar.add(hotelMgmtLabel);
 
-        sidebar.add(createNavButton("👤 Guest Management", "GUESTS"));
+        sidebar.add(createNavButton("\uD83D\uDC64 Guest Management", "GUESTS"));
         sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("📅 Booking Management", "BOOKINGS"));
+        sidebar.add(createNavButton("\uD83D\uDCC5 Booking Management", "BOOKINGS"));
         sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("🛏️ Rooms", "ROOMS"));
+        sidebar.add(createNavButton("\uD83D\uDECF\uFE0F Rooms", "ROOMS"));
         sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("💳 Billing & Payments", "BILLING"));
+        sidebar.add(createNavButton("\uD83D\uDCB3 Billing & Payments", "BILLING"));
         sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("🧹 Services", "SERVICES"));
+        sidebar.add(createNavButton("\uD83E\uDDF9 Services", "SERVICES"));
 
         sidebar.add(Box.createVerticalGlue()); // Push items to top
 
@@ -246,7 +248,7 @@ public class MainAppFrame extends JFrame {
     }
 
     private void checkDatabaseStatusAsync() {
-        dbStatusLabel.setText("● Database: Checking...");
+        dbStatusLabel.setText("\u25cf Database: Checking...");
         dbStatusLabel.setForeground(new Color(200, 150, 0));
 
         SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
@@ -270,10 +272,10 @@ public class MainAppFrame extends JFrame {
 
     private void updateDbStatus(boolean connected) {
         if (connected) {
-            dbStatusLabel.setText("● Database: Connected (hotel_management)");
+            dbStatusLabel.setText("\u25cf Database: Connected (hotel_management)");
             dbStatusLabel.setForeground(new Color(34, 139, 34)); // Forest green
         } else {
-            dbStatusLabel.setText("● Database: Offline (MySQL Not Running)");
+            dbStatusLabel.setText("\u25cf Database: Offline (MySQL Not Running)");
             dbStatusLabel.setForeground(new Color(180, 40, 40)); // Crimson red
         }
     }

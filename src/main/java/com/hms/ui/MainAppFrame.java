@@ -58,8 +58,8 @@ public class MainAppFrame extends JFrame {
         contentPanel.add(bookingManagementPanel, "BOOKINGS");
         contentPanel.add(createPlaceholderPanel("Room Management", 
                 "Teammate Module: Room inventory, types, capacity, and operational status."), "ROOMS");
-        contentPanel.add(createPlaceholderPanel("Billing & Payments", 
-                "Teammate Module: Invoice calculations, payments, and financial summaries."), "BILLING");
+        BillingAndReportsPanel billingAndReportsPanel = new BillingAndReportsPanel();
+        contentPanel.add(billingAndReportsPanel, "BILLING");
         contentPanel.add(createPlaceholderPanel("Hotel Services", 
                 "Teammate Module: Housekeeping tasks and room service orders."), "SERVICES");
 

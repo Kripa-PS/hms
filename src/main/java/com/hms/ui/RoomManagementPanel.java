@@ -35,7 +35,7 @@ public class RoomManagementPanel extends JPanel {
     private static final String[] FILTER_STATUSES = {"ALL", "AVAILABLE", "OCCUPIED", "MAINTENANCE"};
 
     private static final String[] TABLE_COLUMNS = {
-            "ID", "Room No.", "Type", "Capacity", "₹ / Night", "Amenities", "Status"
+            "ID", "Room No.", "Type", "Capacity", "Rate / Night (Rs.)", "Amenities", "Status"
     };
 
     // Colour palette (matches MainAppFrame navy/gold theme)
@@ -110,7 +110,7 @@ public class RoomManagementPanel extends JPanel {
         bar.setBackground(COL_NAVY);
         bar.setBorder(new EmptyBorder(12, 16, 12, 16));
 
-        JLabel title = new JLabel("🛏️  Room Management");
+        JLabel title = new JLabel("Room Management");
         title.setFont(new Font("Segoe UI", Font.BOLD, 18));
         title.setForeground(Color.WHITE);
 
@@ -176,7 +176,7 @@ public class RoomManagementPanel extends JPanel {
         card.add(tfCapacity, at(fc, 1, row++));
 
         // Price per night
-        card.add(formLabel("Price / Night (₹) *"), at(lc, 0, row));
+        card.add(formLabel("Price / Night (Rs.) *"), at(lc, 0, row));
         tfPrice = styledTextField(12);
         tfPrice.setToolTipText("e.g. 2500.00");
         card.add(tfPrice, at(fc, 1, row++));
@@ -192,7 +192,7 @@ public class RoomManagementPanel extends JPanel {
         card.add(formLabel("Status *"), at(lc, 0, row));
         cbStatusForNew = new JComboBox<>(STATUS_OPTS);
         styleCombo(cbStatusForNew);
-        lblStatusDisplay = new JLabel("—");
+        lblStatusDisplay = new JLabel("-");
         lblStatusDisplay.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblStatusDisplay.setVisible(false);
         JPanel statusSlot = new JPanel(new CardLayout());
@@ -215,12 +215,12 @@ public class RoomManagementPanel extends JPanel {
         p.setBackground(COL_BG);
         p.setBorder(new EmptyBorder(8, 0, 0, 0));
 
-        btnAdd  = actionButton("➕  Add Room",      new Color(30, 120, 60));
-        btnSave = actionButton("💾  Save Changes",   new Color(30,  80, 160));
-        btnClear = actionButton("🔄  Clear / New",   new Color(100, 100, 110));
+        btnAdd  = actionButton("Add Room",      new Color(30, 120, 60));
+        btnSave = actionButton("Save Changes",   new Color(30,  80, 160));
+        btnClear = actionButton("Clear / New",   new Color(100, 100, 110));
 
-        btnMarkMaintenance   = actionButton("🔧  Mark Maintenance",   new Color(180, 90, 0));
-        btnRestoreAvailable  = actionButton("✅  Restore Available",  new Color(30, 120, 60));
+        btnMarkMaintenance   = actionButton("Mark Maintenance",   new Color(180, 90, 0));
+        btnRestoreAvailable  = actionButton("Restore Available",  new Color(30, 120, 60));
 
         btnSave.setEnabled(false);            // enabled only when a row is selected
         btnMarkMaintenance.setEnabled(false);
@@ -233,7 +233,7 @@ public class RoomManagementPanel extends JPanel {
         p.add(btnClear);
         p.add(Box.createVerticalStrut(16));
 
-        JLabel sep = new JLabel("── Status Actions ──");
+        JLabel sep = new JLabel("--- Status Actions ---");
         sep.setFont(new Font("Segoe UI", Font.BOLD, 11));
         sep.setForeground(new Color(140, 140, 150));
         sep.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -274,7 +274,7 @@ public class RoomManagementPanel extends JPanel {
                 BorderFactory.createLineBorder(new Color(220, 224, 230), 1),
                 new EmptyBorder(4, 8, 4, 8)));
 
-        bar.add(new JLabel("🔍"));
+        bar.add(new JLabel("Search:"));
 
         tfSearchKeyword = new JTextField(12);
         tfSearchKeyword.setToolTipText("Search by room number");
@@ -332,7 +332,7 @@ public class RoomManagementPanel extends JPanel {
         // Colour-code the Status column (index 6)
         roomTable.getColumnModel().getColumn(6).setCellRenderer(new StatusCellRenderer());
 
-        // Row selection → populate form
+        // Row selection -> populate form
         roomTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 onTableRowSelected();
@@ -348,7 +348,7 @@ public class RoomManagementPanel extends JPanel {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
         p.setBackground(COL_BG);
 
-        JButton btnRefresh = new JButton("🔄 Refresh");
+        JButton btnRefresh = new JButton("Refresh");
         btnRefresh.setFocusPainted(false);
         btnRefresh.addActionListener(e -> loadAllRooms());
         p.add(btnRefresh);
@@ -534,11 +534,11 @@ public class RoomManagementPanel extends JPanel {
             clearForm();
             loadAllRooms();
         } else {
-            showError("Status could not be updated. The room may have changed status — please refresh.");
+            showError("Status could not be updated. The room may have changed status - please refresh.");
         }
     }
 
-    /** Called when user clicks a table row — populates form in edit mode. */
+    /** Called when user clicks a table row - populates form in edit mode. */
     private void onTableRowSelected() {
         int viewRow = roomTable.getSelectedRow();
         if (viewRow < 0) {
@@ -560,7 +560,7 @@ public class RoomManagementPanel extends JPanel {
         lblStatusDisplay.setText(status);
         lblStatusDisplay.setForeground(statusColour(status));
 
-        // Switch status slot to label (edit mode — status not freely editable by form)
+        // Switch status slot to label (edit mode - status not freely editable by form)
         switchStatusSlot(false);
 
         // Enable edit/maintenance buttons, disable add
@@ -581,7 +581,7 @@ public class RoomManagementPanel extends JPanel {
         tfPrice.setText("");
         tfAmenities.setText("WiFi, TV, AC");
         cbStatusForNew.setSelectedIndex(0);
-        lblStatusDisplay.setText("—");
+        lblStatusDisplay.setText("-");
         switchStatusSlot(true);   // show combo again
 
         btnAdd.setEnabled(true);

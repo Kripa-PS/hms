@@ -141,7 +141,7 @@ public class CustomerBookingDialog extends JDialog {
         JPanel left = new JPanel(new GridLayout(2, 1, 2, 2));
         left.setOpaque(false);
 
-        JLabel title = new JLabel("⏱ 5-MINUTE ROOM HOLD ACTIVE");
+        JLabel title = new JLabel("5-MINUTE ROOM HOLD ACTIVE");
         title.setFont(new Font("Segoe UI", Font.BOLD, 14));
         title.setForeground(Color.WHITE);
 
@@ -180,13 +180,13 @@ public class CustomerBookingDialog extends JDialog {
         grid.add(new JLabel(checkIn + " to " + checkOut + " (" + nights + " night" + (nights > 1 ? "s" : "") + ")"));
 
         grid.add(new JLabel("Room Rate:"));
-        grid.add(new JLabel("₹" + room.getPricePerNight().setScale(2, RoundingMode.HALF_UP) + " / night"));
+        grid.add(new JLabel("Rs. " + room.getPricePerNight().setScale(2, RoundingMode.HALF_UP) + " / night"));
 
         JLabel totalLabel = new JLabel("Total Bill Amount:");
         totalLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
         grid.add(totalLabel);
 
-        JLabel totalValue = new JLabel("₹" + totalAmount.setScale(2, RoundingMode.HALF_UP));
+        JLabel totalValue = new JLabel("Rs. " + totalAmount.setScale(2, RoundingMode.HALF_UP));
         totalValue.setFont(new Font("Segoe UI", Font.BOLD, 15));
         totalValue.setForeground(new Color(39, 174, 96));
         grid.add(totalValue);
@@ -262,7 +262,7 @@ public class CustomerBookingDialog extends JDialog {
         grid.add(simStatusCombo);
 
         grid.add(new JLabel("Amount to Pay:"));
-        JLabel amt = new JLabel("₹" + totalAmount.setScale(2, RoundingMode.HALF_UP));
+        JLabel amt = new JLabel("Rs. " + totalAmount.setScale(2, RoundingMode.HALF_UP));
         amt.setFont(new Font("Segoe UI", Font.BOLD, 14));
         amt.setForeground(new Color(41, 128, 185));
         grid.add(amt);
@@ -276,12 +276,12 @@ public class CustomerBookingDialog extends JDialog {
         bar.setBackground(new Color(245, 247, 250));
         bar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(225, 230, 235)));
 
-        btnCancel = new JButton("❌ Cancel Reservation");
+        btnCancel = new JButton("Cancel Reservation");
         btnCancel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCancel.addActionListener(e -> cancelAndClose());
         bar.add(btnCancel);
 
-        btnPay = new JButton("💳 Pay ₹" + totalAmount.setScale(2, RoundingMode.HALF_UP) + " & Confirm");
+        btnPay = new JButton("Pay Rs. " + totalAmount.setScale(2, RoundingMode.HALF_UP) + " & Confirm");
         btnPay.setBackground(new Color(39, 174, 96));
         btnPay.setForeground(Color.WHITE);
         btnPay.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -334,7 +334,7 @@ public class CustomerBookingDialog extends JDialog {
 
         if (secondsRemaining <= 60) {
             bannerPanel.setBackground(new Color(231, 76, 60)); // Urgent red
-            lblBannerSub.setText("⚠️ WARNING: Less than 1 minute remaining! Complete payment now.");
+            lblBannerSub.setText("WARNING: Less than 1 minute remaining! Complete payment now.");
         } else {
             bannerPanel.setBackground(new Color(243, 156, 18)); // Soft warning amber
             lblBannerSub.setText("Your room is held. Complete payment before the timer expires.");
@@ -383,7 +383,7 @@ public class CustomerBookingDialog extends JDialog {
         String simMode = (String) simStatusCombo.getSelectedItem();
         if (simMode != null && simMode.contains("FAILURE")) {
             JOptionPane.showMessageDialog(this,
-                    "❌ Payment Simulation Failed!\n"
+                    "Payment Simulation Failed!\n"
                             + "Reason: Transaction declined by bank / UPI gateway timeout.\n\n"
                             + "Your 5-minute room hold remains ACTIVE! (" + lblCountdown.getText() + " remaining).\n"
                             + "You may change payment method and retry before expiry.",
@@ -447,18 +447,18 @@ public class CustomerBookingDialog extends JDialog {
 
                     // Show success confirmation
                     int choice = JOptionPane.showOptionDialog(CustomerBookingDialog.this,
-                            "🎉 Booking Confirmed Successfully!\n\n"
+                            "Booking Confirmed Successfully!\n\n"
                                     + "Booking Reference: " + inv.getBookingReference() + "\n"
                                     + "Room: " + room.getRoomNumber() + " (" + room.getRoomType() + ")\n"
                                     + "Invoice Number: " + inv.getInvoiceNumber() + "\n"
-                                    + "Amount Paid: ₹" + inv.getPaidAmount() + " (PAID IN FULL)\n\n"
+                                    + "Amount Paid: Rs. " + inv.getPaidAmount() + " (PAID IN FULL)\n\n"
                                     + "Would you like to view/print your invoice now?",
                             "Reservation Confirmed",
                             JOptionPane.YES_NO_OPTION,
                             JOptionPane.INFORMATION_MESSAGE,
                             null,
-                            new String[]{"🖨️ View & Print Invoice", "Go to My Bookings"},
-                            "🖨️ View & Print Invoice");
+                            new String[]{"View & Print Invoice", "Go to My Bookings"},
+                            "View & Print Invoice");
 
                     if (choice == 0) {
                         InvoiceRenderer.showInvoiceDialog(CustomerBookingDialog.this, inv);

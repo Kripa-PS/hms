@@ -28,6 +28,7 @@ public class CustomerAppFrame extends JFrame {
     private final CustomerRoomSearchPanel searchPanel;
     private final CustomerMyBookingsPanel myBookingsPanel;
     private final CustomerMyInvoicesPanel myInvoicesPanel;
+    private final CustomerRoomServicePanel roomServicePanel;
     private final CustomerProfilePanel profilePanel;
 
     private JLabel lblUserInfo;
@@ -50,16 +51,19 @@ public class CustomerAppFrame extends JFrame {
         tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
         searchPanel = new CustomerRoomSearchPanel(this::onBookingCompleted);
-        tabbedPane.addTab("🔍 Search & Book Rooms", searchPanel);
+        tabbedPane.addTab("Search & Book Rooms", searchPanel);
 
         myBookingsPanel = new CustomerMyBookingsPanel();
-        tabbedPane.addTab("📅 My Bookings", myBookingsPanel);
+        tabbedPane.addTab("My Bookings", myBookingsPanel);
 
         myInvoicesPanel = new CustomerMyInvoicesPanel();
-        tabbedPane.addTab("🧾 My Invoices", myInvoicesPanel);
+        tabbedPane.addTab("My Invoices", myInvoicesPanel);
+
+        roomServicePanel = new CustomerRoomServicePanel();
+        tabbedPane.addTab("Room Service", roomServicePanel);
 
         profilePanel = new CustomerProfilePanel();
-        tabbedPane.addTab("👤 My Profile", profilePanel);
+        tabbedPane.addTab("My Profile", profilePanel);
 
         // When switching tabs, auto-refresh the active tab
         tabbedPane.addChangeListener(e -> {
@@ -68,6 +72,8 @@ public class CustomerAppFrame extends JFrame {
                 myBookingsPanel.loadBookingsAsync();
             } else if (idx == 2) {
                 myInvoicesPanel.loadInvoicesAsync();
+            } else if (idx == 3) {
+                roomServicePanel.refreshAsync();
             }
         });
 
@@ -83,7 +89,7 @@ public class CustomerAppFrame extends JFrame {
         infoLabel.setForeground(Color.GRAY);
         statusBar.add(infoLabel, BorderLayout.WEST);
 
-        lblDbStatus = new JLabel("● Database: Connected");
+        lblDbStatus = new JLabel("Database: Connected");
         lblDbStatus.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblDbStatus.setForeground(new Color(34, 139, 34));
         statusBar.add(lblDbStatus, BorderLayout.EAST);
@@ -121,12 +127,12 @@ public class CustomerAppFrame extends JFrame {
         User currentUser = UserSession.getCurrentUser();
         String displayName = currentUser != null ? currentUser.getFullName() : "Guest";
 
-        lblUserInfo = new JLabel("👤 " + displayName);
+        lblUserInfo = new JLabel(displayName);
         lblUserInfo.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblUserInfo.setForeground(Color.WHITE);
         userPanel.add(lblUserInfo);
 
-        JButton btnLogout = new JButton("🚪 Logout");
+        JButton btnLogout = new JButton("Logout");
         btnLogout.setBackground(new Color(192, 57, 43)); // Crimson red
         btnLogout.setForeground(Color.WHITE);
         btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -143,6 +149,7 @@ public class CustomerAppFrame extends JFrame {
         tabbedPane.setSelectedIndex(1);
         myBookingsPanel.loadBookingsAsync();
         myInvoicesPanel.loadInvoicesAsync();
+        roomServicePanel.refreshAsync();
     }
 
     private void onLogout(ActionEvent e) {
@@ -171,7 +178,7 @@ public class CustomerAppFrame extends JFrame {
                 try {
                     boolean ok = get();
                     if (!ok) {
-                        lblDbStatus.setText("● Database Offline");
+                        lblDbStatus.setText("Database: Offline");
                         lblDbStatus.setForeground(new Color(192, 57, 43));
                     }
                 } catch (Exception ex) {

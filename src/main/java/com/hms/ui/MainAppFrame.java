@@ -91,7 +91,7 @@ public class MainAppFrame extends JFrame {
         infoLabel.setForeground(Color.GRAY);
         statusBar.add(infoLabel, BorderLayout.WEST);
 
-        dbStatusLabel = new JLabel("\u25cf Database: Checking...");
+        dbStatusLabel = new JLabel("Database: Checking...");
         dbStatusLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         updateDbStatus(false);
         statusBar.add(dbStatusLabel, BorderLayout.EAST);
@@ -131,12 +131,12 @@ public class MainAppFrame extends JFrame {
         String roleStr = currentUser != null ? (" (" + currentUser.getRole() + ")") : " (STAFF)";
         String nameStr = currentUser != null ? currentUser.getFullName() : "Administrator";
 
-        JLabel lblUser = new JLabel("👤 " + nameStr + roleStr);
+        JLabel lblUser = new JLabel(nameStr + roleStr);
         lblUser.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblUser.setForeground(Color.WHITE);
         userPanel.add(lblUser);
 
-        JButton btnLogout = new JButton("🚪 Logout");
+        JButton btnLogout = new JButton("Logout");
         btnLogout.setBackground(new Color(192, 57, 43));
         btnLogout.setForeground(Color.WHITE);
         btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -162,7 +162,7 @@ public class MainAppFrame extends JFrame {
         navTitle.setBorder(new EmptyBorder(5, 10, 10, 10));
         sidebar.add(navTitle);
 
-        sidebar.add(createNavButton("\uD83C\uDFE0 Dashboard", "WELCOME"));
+        sidebar.add(createNavButton("Dashboard", "WELCOME"));
         sidebar.add(Box.createVerticalStrut(6));
 
         JLabel hotelMgmtLabel = new JLabel("HOTEL MANAGEMENT");
@@ -171,15 +171,15 @@ public class MainAppFrame extends JFrame {
         hotelMgmtLabel.setBorder(new EmptyBorder(15, 10, 6, 10));
         sidebar.add(hotelMgmtLabel);
 
-        sidebar.add(createNavButton("\uD83D\uDC64 Guest Management", "GUESTS"));
+        sidebar.add(createNavButton("Guest Management", "GUESTS"));
         sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("\uD83D\uDCC5 Booking Management", "BOOKINGS"));
+        sidebar.add(createNavButton("Booking Management", "BOOKINGS"));
         sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("\uD83D\uDECF\uFE0F Rooms", "ROOMS"));
+        sidebar.add(createNavButton("Rooms", "ROOMS"));
         sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("\uD83D\uDCB3 Billing & Payments", "BILLING"));
+        sidebar.add(createNavButton("Billing & Payments", "BILLING"));
         sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(createNavButton("\uD83E\uDDF9 Services", "SERVICES"));
+        sidebar.add(createNavButton("Services", "SERVICES"));
 
         sidebar.add(Box.createVerticalGlue()); // Push items to top
 
@@ -241,7 +241,7 @@ public class MainAppFrame extends JFrame {
         cardsGrid.setMaximumSize(new Dimension(900, 140));
 
         cardsGrid.add(createSummaryBox("Guest Management", "Register guests, track phone & IDs, and maintain stay histories.", new Color(41, 128, 185)));
-        cardsGrid.add(createSummaryBox("Booking & 5-Min Hold", "Check room availability, prevent date overlaps, and lock rooms temporarily.", new Color(39, 174, 96)));
+        cardsGrid.add(createSummaryBox("Booking Management", "Check room availability, prevent date overlaps, and manage reservations.", new Color(39, 174, 96)));
         cardsGrid.add(createSummaryBox("System Architecture", "Shared MySQL database, JDBC PreparedStatements, and clean OOP design.", new Color(142, 68, 173)));
 
         content.add(cardsGrid);
@@ -304,7 +304,7 @@ public class MainAppFrame extends JFrame {
     }
 
     private void checkDatabaseStatusAsync() {
-        dbStatusLabel.setText("\u25cf Database: Checking...");
+        dbStatusLabel.setText("Database: Checking...");
         dbStatusLabel.setForeground(new Color(200, 150, 0));
 
         SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
@@ -328,10 +328,10 @@ public class MainAppFrame extends JFrame {
 
     private void updateDbStatus(boolean connected) {
         if (connected) {
-            dbStatusLabel.setText("\u25cf Database: Connected (hotel_management)");
+            dbStatusLabel.setText("Database: Connected (hotel_management)");
             dbStatusLabel.setForeground(new Color(34, 139, 34)); // Forest green
         } else {
-            dbStatusLabel.setText("\u25cf Database: Offline (MySQL Not Running)");
+            dbStatusLabel.setText("Database: Offline (MySQL Not Running)");
             dbStatusLabel.setForeground(new Color(180, 40, 40)); // Crimson red
         }
     }

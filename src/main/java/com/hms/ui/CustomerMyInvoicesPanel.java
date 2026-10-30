@@ -54,12 +54,12 @@ public class CustomerMyInvoicesPanel extends JPanel {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actions.setOpaque(false);
 
-        btnRefresh = new JButton("🔄 Refresh");
+        btnRefresh = new JButton("Refresh");
         btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnRefresh.addActionListener(e -> loadInvoicesAsync());
         actions.add(btnRefresh);
 
-        btnViewInvoice = new JButton("🖨️ View & Print Invoice");
+        btnViewInvoice = new JButton("View & Print Invoice");
         btnViewInvoice.setEnabled(false);
         btnViewInvoice.setBackground(new Color(24, 43, 73));
         btnViewInvoice.setForeground(Color.WHITE);
@@ -72,7 +72,7 @@ public class CustomerMyInvoicesPanel extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
 
         // Invoices Table
-        String[] cols = {"Invoice #", "Booking Ref", "Issue Date", "Total (₹)", "Paid (₹)", "Balance (₹)", "Payment Status"};
+        String[] cols = {"Invoice #", "Booking Ref", "Issue Date", "Total (Rs.)", "Paid (Rs.)", "Balance (Rs.)", "Payment Status"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -144,9 +144,9 @@ public class CustomerMyInvoicesPanel extends JPanel {
                                 inv.getInvoiceNumber(),
                                 inv.getBookingReference() != null ? inv.getBookingReference() : ("#" + inv.getBookingId()),
                                 dateStr,
-                                "₹" + inv.getTotalAmount().setScale(2, RoundingMode.HALF_UP),
-                                "₹" + inv.getPaidAmount().setScale(2, RoundingMode.HALF_UP),
-                                "₹" + inv.getBalanceDue().setScale(2, RoundingMode.HALF_UP),
+                                "Rs. " + inv.getTotalAmount().setScale(2, RoundingMode.HALF_UP),
+                                "Rs. " + inv.getPaidAmount().setScale(2, RoundingMode.HALF_UP),
+                                "Rs. " + inv.getBalanceDue().setScale(2, RoundingMode.HALF_UP),
                                 statusStr
                         });
                     }

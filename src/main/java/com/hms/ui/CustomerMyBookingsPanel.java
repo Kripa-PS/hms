@@ -60,12 +60,12 @@ public class CustomerMyBookingsPanel extends JPanel {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actions.setOpaque(false);
 
-        btnRefresh = new JButton("🔄 Refresh");
+        btnRefresh = new JButton("Refresh");
         btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnRefresh.addActionListener(e -> loadBookingsAsync());
         actions.add(btnRefresh);
 
-        btnViewInvoice = new JButton("📄 View Invoice");
+        btnViewInvoice = new JButton("View Invoice");
         btnViewInvoice.setEnabled(false);
         btnViewInvoice.setBackground(new Color(24, 43, 73));
         btnViewInvoice.setForeground(Color.WHITE);
@@ -74,7 +74,7 @@ public class CustomerMyBookingsPanel extends JPanel {
         btnViewInvoice.addActionListener(e -> onViewInvoice());
         actions.add(btnViewInvoice);
 
-        btnCancelBooking = new JButton("❌ Cancel Booking");
+        btnCancelBooking = new JButton("Cancel Booking");
         btnCancelBooking.setEnabled(false);
         btnCancelBooking.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCancelBooking.addActionListener(e -> onCancelBooking());
@@ -84,7 +84,7 @@ public class CustomerMyBookingsPanel extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
 
         // Bookings Table
-        String[] cols = {"Reference #", "Room", "Room Type", "Check-In", "Check-Out", "Nights", "Total (₹)", "Status"};
+        String[] cols = {"Reference #", "Room", "Room Type", "Check-In", "Check-Out", "Nights", "Total (Rs.)", "Status"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -157,7 +157,7 @@ public class CustomerMyBookingsPanel extends JPanel {
                                 b.getCheckInDate(),
                                 b.getCheckOutDate(),
                                 b.getNumberOfNights(),
-                                (b.getTotalAmount() != null ? ("₹" + b.getTotalAmount().setScale(2, RoundingMode.HALF_UP)) : "₹0.00"),
+                                (b.getTotalAmount() != null ? ("Rs. " + b.getTotalAmount().setScale(2, RoundingMode.HALF_UP)) : "Rs. 0.00"),
                                 b.getStatus()
                         });
                     }

@@ -161,7 +161,7 @@ public class Payment {
 
     @Override
     public String toString() {
-        return "Payment[ID=" + id + ", Booking=" + bookingId + " (" + bookingReference + "), Amount=₹" 
+        return "Payment[ID=" + id + ", Booking=" + bookingId + " (" + bookingReference + "), Amount=Rs. " 
                 + amount + ", Method=" + paymentMethod + ", Status=" + paymentStatus + ", Txn=" + transactionReference + "]";
     }
 }

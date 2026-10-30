@@ -141,9 +141,9 @@ public class BillingAndReportsPanel extends JPanel {
         mainTabbedPane = new JTabbedPane();
         mainTabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        mainTabbedPane.addTab("💳 Billing & Payments", createBillingTab());
-        mainTabbedPane.addTab("🧾 Invoices & Printing", createInvoicesTab());
-        mainTabbedPane.addTab("📊 Reports", createReportsTab());
+        mainTabbedPane.addTab("Billing & Payments", createBillingTab());
+        mainTabbedPane.addTab("Invoices & Printing", createInvoicesTab());
+        mainTabbedPane.addTab("Reports", createReportsTab());
 
         add(mainTabbedPane, BorderLayout.CENTER);
 
@@ -172,7 +172,7 @@ public class BillingAndReportsPanel extends JPanel {
 
         panel.add(textPanel, BorderLayout.WEST);
 
-        JButton btnRefreshAll = new JButton("🔄 Refresh Data");
+        JButton btnRefreshAll = new JButton("Refresh Data");
         btnRefreshAll.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnRefreshAll.addActionListener(e -> {
             refreshBookingSelectors();
@@ -253,14 +253,14 @@ public class BillingAndReportsPanel extends JPanel {
         lblBillDates = new JLabel("-");
         lblBillNights = new JLabel("-");
         lblBillRate = new JLabel("-");
-        lblBillTotal = new JLabel("₹0.00");
+        lblBillTotal = new JLabel("Rs. 0.00");
         lblBillTotal.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        lblBillPaid = new JLabel("₹0.00");
+        lblBillPaid = new JLabel("Rs. 0.00");
         lblBillPaid.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblBillPaid.setForeground(SUCCESS_GREEN);
 
-        lblBillBalance = new JLabel("₹0.00");
+        lblBillBalance = new JLabel("Rs. 0.00");
         lblBillBalance.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblBillBalance.setForeground(DANGER_RED);
 
@@ -308,7 +308,7 @@ public class BillingAndReportsPanel extends JPanel {
 
         // Row 0: Amount
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.3;
-        form.add(new JLabel("Amount (₹):*"), gbc);
+        form.add(new JLabel("Amount (Rs.):*"), gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
         paymentAmountField = new JTextField();
         paymentAmountField.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -354,7 +354,7 @@ public class BillingAndReportsPanel extends JPanel {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 8));
         btnPanel.setOpaque(false);
 
-        btnQuickFullSettle = new JButton("⚡ Settle Full");
+        btnQuickFullSettle = new JButton("Settle Full");
         btnQuickFullSettle.setToolTipText("Populates remaining balance and sets status to PAID");
         btnQuickFullSettle.addActionListener(e -> onQuickFullSettle());
         btnPanel.add(btnQuickFullSettle);
@@ -388,7 +388,7 @@ public class BillingAndReportsPanel extends JPanel {
         ));
         panel.setBackground(Color.WHITE);
 
-        String[] cols = {"ID", "Txn Ref", "Method", "Status", "Amount (₹)", "Date & Time", "Notes"};
+        String[] cols = {"ID", "Txn Ref", "Method", "Status", "Amount (Rs.)", "Date & Time", "Notes"};
         paymentHistoryModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
@@ -516,7 +516,7 @@ public class BillingAndReportsPanel extends JPanel {
         try {
             paymentDAO.recordPayment(payment);
             JOptionPane.showMessageDialog(this, 
-                    "Payment of ₹" + amount + " recorded successfully!\nStatus: " + status + "\nTxn Ref: " + txnRef, 
+                    "Payment of Rs. " + amount + " recorded successfully!\nStatus: " + status + "\nTxn Ref: " + txnRef, 
                     "Payment Success", JOptionPane.INFORMATION_MESSAGE);
 
             clearPaymentForm();
@@ -554,15 +554,15 @@ public class BillingAndReportsPanel extends JPanel {
         lblBillNights.setText(nights + " night" + (nights > 1 ? "s" : ""));
 
         BigDecimal total = b.getTotalAmount() != null ? b.getTotalAmount() : BigDecimal.ZERO;
-        lblBillTotal.setText("₹" + total.setScale(2, RoundingMode.HALF_UP));
+        lblBillTotal.setText("Rs. " + total.setScale(2, RoundingMode.HALF_UP));
 
         // Load payments from DAO
         List<Payment> payments = paymentDAO.findPaymentsByBookingId(b.getId());
         BigDecimal totalPaid = BillCalculator.calculateTotalPaid(payments);
         BigDecimal balance = BillCalculator.calculateBalanceDue(total, totalPaid);
 
-        lblBillPaid.setText("₹" + totalPaid.setScale(2, RoundingMode.HALF_UP));
-        lblBillBalance.setText("₹" + balance.setScale(2, RoundingMode.HALF_UP));
+        lblBillPaid.setText("Rs. " + totalPaid.setScale(2, RoundingMode.HALF_UP));
+        lblBillBalance.setText("Rs. " + balance.setScale(2, RoundingMode.HALF_UP));
 
         if (balance.compareTo(BigDecimal.ZERO) <= 0) {
             lblBillStatusBadge.setText("PAID (SETTLED)");
@@ -594,7 +594,7 @@ public class BillingAndReportsPanel extends JPanel {
                     p.getTransactionReference(),
                     p.getPaymentMethod(),
                     p.getPaymentStatus(),
-                    "₹" + p.getAmount(),
+                    "Rs. " + p.getAmount(),
                     p.getPaymentDate() != null ? p.getPaymentDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "-",
                     p.getNotes() != null ? p.getNotes() : ""
             });
@@ -606,9 +606,9 @@ public class BillingAndReportsPanel extends JPanel {
         lblBillRoom.setText("-");
         lblBillDates.setText("-");
         lblBillNights.setText("-");
-        lblBillTotal.setText("₹0.00");
-        lblBillPaid.setText("₹0.00");
-        lblBillBalance.setText("₹0.00");
+        lblBillTotal.setText("Rs. 0.00");
+        lblBillPaid.setText("Rs. 0.00");
+        lblBillBalance.setText("Rs. 0.00");
         lblBillStatusBadge.setText("-");
     }
 
@@ -630,7 +630,7 @@ public class BillingAndReportsPanel extends JPanel {
         invoiceBookingCombo.setPreferredSize(new Dimension(340, 30));
         topBar.add(invoiceBookingCombo);
 
-        btnGenerateInvoice = new JButton("📄 Generate / Update Invoice");
+        btnGenerateInvoice = new JButton("Generate / Update Invoice");
         btnGenerateInvoice.setBackground(NAVY);
         btnGenerateInvoice.setForeground(Color.WHITE);
         btnGenerateInvoice.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -638,12 +638,12 @@ public class BillingAndReportsPanel extends JPanel {
         btnGenerateInvoice.addActionListener(e -> onGenerateInvoice());
         topBar.add(btnGenerateInvoice);
 
-        btnPrintInvoice = new JButton("🖨️ Print / Export PDF");
+        btnPrintInvoice = new JButton("Print / Export PDF");
         btnPrintInvoice.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnPrintInvoice.addActionListener(e -> onPrintInvoice());
         topBar.add(btnPrintInvoice);
 
-        btnExportHtml = new JButton("💾 Save HTML");
+        btnExportHtml = new JButton("Save HTML");
         btnExportHtml.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnExportHtml.addActionListener(e -> onExportHtml());
         topBar.add(btnExportHtml);
@@ -655,7 +655,7 @@ public class BillingAndReportsPanel extends JPanel {
         leftPanel.setBorder(BorderFactory.createTitledBorder(" Generated Invoices "));
         leftPanel.setOpaque(false);
 
-        String[] cols = {"Invoice #", "Booking Ref", "Guest", "Total (₹)", "Paid (₹)", "Balance (₹)"};
+        String[] cols = {"Invoice #", "Booking Ref", "Guest", "Total (Rs.)", "Paid (Rs.)", "Balance (Rs.)"};
         invoiceListModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -704,8 +704,8 @@ public class BillingAndReportsPanel extends JPanel {
         try {
             Invoice inv = invoiceDAO.generateInvoice(item.booking.getId(), "Thank you for staying at Grand Horizon Hotel!");
             JOptionPane.showMessageDialog(this, 
-                    "Invoice " + inv.getInvoiceNumber() + " generated successfully!\nTotal: ₹" + inv.getTotalAmount() 
-                    + " | Paid: ₹" + inv.getPaidAmount() + " | Balance: ₹" + inv.getBalanceDue(),
+                    "Invoice " + inv.getInvoiceNumber() + " generated successfully!\nTotal: Rs. " + inv.getTotalAmount() 
+                    + " | Paid: Rs. " + inv.getPaidAmount() + " | Balance: Rs. " + inv.getBalanceDue(),
                     "Invoice Generated", JOptionPane.INFORMATION_MESSAGE);
 
             loadAllInvoices();
@@ -724,9 +724,9 @@ public class BillingAndReportsPanel extends JPanel {
                     inv.getInvoiceNumber(),
                     inv.getBookingReference(),
                     inv.getGuestName(),
-                    "₹" + inv.getTotalAmount(),
-                    "₹" + inv.getPaidAmount(),
-                    "₹" + inv.getBalanceDue()
+                    "Rs. " + inv.getTotalAmount(),
+                    "Rs. " + inv.getPaidAmount(),
+                    "Rs. " + inv.getBalanceDue()
             });
         }
     }
@@ -844,25 +844,25 @@ public class BillingAndReportsPanel extends JPanel {
                 + "  <th align='left'>Description</th>"
                 + "  <th align='center'>Rate / Night</th>"
                 + "  <th align='center'>Nights</th>"
-                + "  <th align='right'>Amount (₹)</th>"
+                + "  <th align='right'>Amount (Rs.)</th>"
                 + "</tr>"
                 + "<tr>"
                 + "  <td>Room Accommodation (" + inv.getRoomType() + " Room " + inv.getRoomNumber() + ")</td>"
-                + "  <td align='center'>₹" + (inv.getRatePerNight() != null ? inv.getRatePerNight() : "0.00") + "</td>"
+                + "  <td align='center'>Rs. " + (inv.getRatePerNight() != null ? inv.getRatePerNight() : "0.00") + "</td>"
                 + "  <td align='center'>" + inv.getNumberOfNights() + "</td>"
-                + "  <td align='right'>₹" + (inv.getTotalRoomCharges() != null ? inv.getTotalRoomCharges() : inv.getTotalAmount()) + "</td>"
+                + "  <td align='right'>Rs. " + (inv.getTotalRoomCharges() != null ? inv.getTotalRoomCharges() : inv.getTotalAmount()) + "</td>"
                 + "</tr>"
                 + "<tr style='background:#fafafa;'>"
                 + "  <td colspan='3' align='right'><b>Total Charges:</b></td>"
-                + "  <td align='right'><b>₹" + inv.getTotalAmount() + "</b></td>"
+                + "  <td align='right'><b>Rs. " + inv.getTotalAmount() + "</b></td>"
                 + "</tr>"
                 + "<tr>"
                 + "  <td colspan='3' align='right' style='color:#27ae60;'><b>Amount Paid:</b></td>"
-                + "  <td align='right' style='color:#27ae60;'><b>₹" + inv.getPaidAmount() + "</b></td>"
+                + "  <td align='right' style='color:#27ae60;'><b>Rs. " + inv.getPaidAmount() + "</b></td>"
                 + "</tr>"
                 + "<tr style='background:#fff3cd;'>"
                 + "  <td colspan='3' align='right' style='color:#c0392b;'><b>Balance Due:</b></td>"
-                + "  <td align='right' style='color:#c0392b; font-size:13px;'><b>₹" + inv.getBalanceDue() + "</b></td>"
+                + "  <td align='right' style='color:#c0392b; font-size:13px;'><b>Rs. " + inv.getBalanceDue() + "</b></td>"
                 + "</tr>"
                 + "</table>"
                 + "<br>"
@@ -881,9 +881,9 @@ public class BillingAndReportsPanel extends JPanel {
         JTabbedPane reportTabs = new JTabbedPane(JTabbedPane.TOP);
         reportTabs.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 
-        reportTabs.addTab("📅 Booking Report", createBookingReportSubTab());
-        reportTabs.addTab("🏨 Occupancy Report", createOccupancyReportSubTab());
-        reportTabs.addTab("💰 Revenue Analytics", createRevenueReportSubTab());
+        reportTabs.addTab("Booking Report", createBookingReportSubTab());
+        reportTabs.addTab("Occupancy Report", createOccupancyReportSubTab());
+        reportTabs.addTab("Revenue Analytics", createRevenueReportSubTab());
 
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(Color.WHITE);
@@ -920,7 +920,7 @@ public class BillingAndReportsPanel extends JPanel {
         btnRunBookingReport.addActionListener(e -> onRunBookingReport());
         filterBar.add(btnRunBookingReport);
 
-        lblBookingRepStats = new JLabel("Total Bookings: 0 | Total Value: ₹0.00");
+        lblBookingRepStats = new JLabel("Total Bookings: 0 | Total Value: Rs. 0.00");
         lblBookingRepStats.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblBookingRepStats.setForeground(NAVY);
         filterBar.add(Box.createHorizontalStrut(15));
@@ -929,7 +929,7 @@ public class BillingAndReportsPanel extends JPanel {
         panel.add(filterBar, BorderLayout.NORTH);
 
         // Table
-        String[] cols = {"ID", "Reference", "Guest Name", "Phone", "Room", "Type", "Check-In", "Check-Out", "Nights", "Total (₹)", "Status"};
+        String[] cols = {"ID", "Reference", "Guest Name", "Phone", "Room", "Type", "Check-In", "Check-Out", "Nights", "Total (Rs.)", "Status"};
         bookingReportModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -962,14 +962,14 @@ public class BillingAndReportsPanel extends JPanel {
                     item.getCheckInDate(),
                     item.getCheckOutDate(),
                     item.getNights(),
-                    "₹" + item.getTotalAmount(),
+                    "Rs. " + item.getTotalAmount(),
                     item.getBookingStatus()
             });
             if (item.getTotalAmount() != null) {
                 sumTotal = sumTotal.add(item.getTotalAmount());
             }
         }
-        lblBookingRepStats.setText("Total Bookings: " + list.size() + " | Total Value: ₹" + sumTotal.setScale(2, RoundingMode.HALF_UP));
+        lblBookingRepStats.setText("Total Bookings: " + list.size() + " | Total Value: Rs. " + sumTotal.setScale(2, RoundingMode.HALF_UP));
     }
 
     // 3b. Occupancy Report
@@ -1115,15 +1115,15 @@ public class BillingAndReportsPanel extends JPanel {
         kpiGrid.setOpaque(false);
         kpiGrid.setPreferredSize(new Dimension(0, 90));
 
-        lblRevTotal = new JLabel("₹0.00", SwingConstants.CENTER);
+        lblRevTotal = new JLabel("Rs. 0.00", SwingConstants.CENTER);
         lblRevTotal.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblRevTotal.setForeground(SUCCESS_GREEN);
 
-        lblRevRefunds = new JLabel("₹0.00", SwingConstants.CENTER);
+        lblRevRefunds = new JLabel("Rs. 0.00", SwingConstants.CENTER);
         lblRevRefunds.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblRevRefunds.setForeground(DANGER_RED);
 
-        lblRevNet = new JLabel("₹0.00", SwingConstants.CENTER);
+        lblRevNet = new JLabel("Rs. 0.00", SwingConstants.CENTER);
         lblRevNet.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblRevNet.setForeground(NAVY);
 
@@ -1142,7 +1142,7 @@ public class BillingAndReportsPanel extends JPanel {
         tablePanel.setBorder(BorderFactory.createTitledBorder(" Date-Wise Collections & Payment Method Breakdown "));
         tablePanel.setOpaque(false);
 
-        String[] cols = {"Date", "Cash (₹)", "Card (₹)", "UPI (₹)", "Refunds (₹)", "Net Daily Total (₹)", "Transactions"};
+        String[] cols = {"Date", "Cash (Rs.)", "Card (Rs.)", "UPI (Rs.)", "Refunds (Rs.)", "Net Daily Total (Rs.)", "Transactions"};
         dailyRevenueModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -1166,20 +1166,20 @@ public class BillingAndReportsPanel extends JPanel {
 
         RevenueReport rep = reportDAO.generateRevenueReport(from, to);
 
-        lblRevTotal.setText("₹" + rep.getTotalRevenue().setScale(2, RoundingMode.HALF_UP));
-        lblRevRefunds.setText("₹" + rep.getTotalRefunds().setScale(2, RoundingMode.HALF_UP));
-        lblRevNet.setText("₹" + rep.getNetRevenue().setScale(2, RoundingMode.HALF_UP));
+        lblRevTotal.setText("Rs. " + rep.getTotalRevenue().setScale(2, RoundingMode.HALF_UP));
+        lblRevRefunds.setText("Rs. " + rep.getTotalRefunds().setScale(2, RoundingMode.HALF_UP));
+        lblRevNet.setText("Rs. " + rep.getNetRevenue().setScale(2, RoundingMode.HALF_UP));
         lblRevCount.setText(String.valueOf(rep.getPaymentCount()));
 
         dailyRevenueModel.setRowCount(0);
         for (RevenueReport.DailyRevenueItem d : rep.getDailyBreakdown()) {
             dailyRevenueModel.addRow(new Object[]{
                     d.getDate(),
-                    "₹" + d.getCashAmount(),
-                    "₹" + d.getCardAmount(),
-                    "₹" + d.getUpiAmount(),
-                    "₹" + d.getRefundAmount(),
-                    "₹" + d.getNetAmount(),
+                    "Rs. " + d.getCashAmount(),
+                    "Rs. " + d.getCardAmount(),
+                    "Rs. " + d.getUpiAmount(),
+                    "Rs. " + d.getRefundAmount(),
+                    "Rs. " + d.getNetAmount(),
                     d.getTransactionCount()
             });
         }
@@ -1253,7 +1253,7 @@ public class BillingAndReportsPanel extends JPanel {
             String ref = booking.getBookingReference() != null ? booking.getBookingReference() : ("ID:" + booking.getId());
             String gName = booking.getGuestName() != null ? booking.getGuestName() : "Guest";
             String rNum = booking.getRoomNumber() != null ? ("Room " + booking.getRoomNumber()) : "";
-            return ref + " - " + gName + " (" + rNum + ") - ₹" + booking.getTotalAmount();
+            return ref + " - " + gName + " (" + rNum + ") - Rs. " + booking.getTotalAmount();
         }
     }
 }

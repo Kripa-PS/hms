@@ -112,7 +112,7 @@ public class CustomerProfilePanel extends JPanel {
         lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 12));
         bottomBtn.add(lblStatus);
 
-        btnSave = new JButton("💾 Save Profile Changes");
+        btnSave = new JButton("Save Profile Changes");
         btnSave.setBackground(new Color(39, 174, 96));
         btnSave.setForeground(Color.WHITE);
         btnSave.setFont(new Font("Segoe UI", Font.BOLD, 12));

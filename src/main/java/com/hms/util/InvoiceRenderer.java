@@ -87,20 +87,20 @@ public class InvoiceRenderer {
           .append("  <th align='left'>Description</th>")
           .append("  <th align='center'>Rate / Night</th>")
           .append("  <th align='center'>Nights</th>")
-          .append("  <th align='right'>Amount (₹)</th>")
+          .append("  <th align='right'>Amount (Rs.)</th>")
           .append("</tr>")
           .append("<tr>")
           .append("  <td>Room Accommodation (").append(inv.getRoomType() != null ? inv.getRoomType() : "Standard").append(" Room ").append(inv.getRoomNumber() != null ? inv.getRoomNumber() : "-").append(")</td>")
-          .append("  <td align='center'>₹").append(inv.getRatePerNight() != null ? inv.getRatePerNight() : "0.00").append("</td>")
+          .append("  <td align='center'>Rs. ").append(inv.getRatePerNight() != null ? inv.getRatePerNight() : "0.00").append("</td>")
           .append("  <td align='center'>").append(inv.getNumberOfNights()).append("</td>")
-          .append("  <td align='right'>₹").append(inv.getTotalRoomCharges() != null ? inv.getTotalRoomCharges() : inv.getTotalAmount()).append("</td>")
+          .append("  <td align='right'>Rs. ").append(inv.getTotalRoomCharges() != null ? inv.getTotalRoomCharges() : inv.getTotalAmount()).append("</td>")
           .append("</tr>");
 
         if (inv.getOtherCharges() != null && inv.getOtherCharges().compareTo(BigDecimal.ZERO) > 0) {
-            sb.append("<tr><td>Additional Services & Amenities</td><td align='center'>-</td><td align='center'>-</td><td align='right'>₹").append(inv.getOtherCharges()).append("</td></tr>");
+            sb.append("<tr><td>Additional Services & Amenities</td><td align='center'>-</td><td align='center'>-</td><td align='right'>Rs. ").append(inv.getOtherCharges()).append("</td></tr>");
         }
         if (inv.getDiscount() != null && inv.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
-            sb.append("<tr style='color:#27ae60;'><td>Special Promotion / Discount</td><td align='center'>-</td><td align='center'>-</td><td align='right'>-₹").append(inv.getDiscount()).append("</td></tr>");
+            sb.append("<tr style='color:#27ae60;'><td>Special Promotion / Discount</td><td align='center'>-</td><td align='center'>-</td><td align='right'>-Rs. ").append(inv.getDiscount()).append("</td></tr>");
         }
 
         sb.append("</table>")
@@ -115,10 +115,10 @@ public class InvoiceRenderer {
           .append("  </td>")
           .append("  <td width='45%' align='right'>")
           .append("    <table width='100%' cellpadding='4' style='font-size:12px;'>")
-          .append("    <tr><td><b>Total Bill:</b></td><td align='right'><b>₹").append(inv.getTotalAmount()).append("</b></td></tr>")
-          .append("    <tr style='color:#27ae60;'><td><b>Amount Paid:</b></td><td align='right'><b>₹").append(inv.getPaidAmount()).append("</b></td></tr>")
+          .append("    <tr><td><b>Total Bill:</b></td><td align='right'><b>Rs. ").append(inv.getTotalAmount()).append("</b></td></tr>")
+          .append("    <tr style='color:#27ae60;'><td><b>Amount Paid:</b></td><td align='right'><b>Rs. ").append(inv.getPaidAmount()).append("</b></td></tr>")
           .append("    <tr style='border-top:1px solid #182b49; font-size:13px; color:").append(inv.getBalanceDue().compareTo(BigDecimal.ZERO) > 0 ? "#c0392b" : "#27ae60").append(";'>")
-          .append("      <td><b>Balance Due:</b></td><td align='right'><b>₹").append(inv.getBalanceDue()).append("</b></td>")
+          .append("      <td><b>Balance Due:</b></td><td align='right'><b>Rs. ").append(inv.getBalanceDue()).append("</b></td>")
           .append("    </tr>")
           .append("    </table>")
           .append("  </td>")
@@ -157,7 +157,7 @@ public class InvoiceRenderer {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         buttonPanel.setBackground(new Color(245, 247, 250));
 
-        JButton btnPrint = new JButton("🖨️ Print / Export PDF");
+        JButton btnPrint = new JButton("Print / Export PDF");
         btnPrint.setBackground(new Color(24, 43, 73));
         btnPrint.setForeground(Color.WHITE);
         btnPrint.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -173,7 +173,7 @@ public class InvoiceRenderer {
             }
         });
 
-        JButton btnSaveHtml = new JButton("💾 Save HTML");
+        JButton btnSaveHtml = new JButton("Save HTML");
         btnSaveHtml.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSaveHtml.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();

@@ -120,7 +120,7 @@ public class CustomerRoomSearchPanel extends JPanel {
         panel.add(roomTypeFilterCombo);
 
         // Buttons
-        btnSearch = new JButton("🔍 Find Available Rooms");
+        btnSearch = new JButton("Find Available Rooms");
         btnSearch.setBackground(new Color(24, 43, 73));
         btnSearch.setForeground(Color.WHITE);
         btnSearch.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -150,7 +150,7 @@ public class CustomerRoomSearchPanel extends JPanel {
                 " Available Rooms for Selected Dates ", TitledBorder.LEADING, TitledBorder.TOP,
                 new Font("Segoe UI", Font.BOLD, 13), new Color(24, 43, 73)));
 
-        String[] cols = {"Room #", "Room Type", "Capacity", "Rate / Night (₹)", "Amenities"};
+        String[] cols = {"Room #", "Room Type", "Capacity", "Rate / Night (Rs.)", "Amenities"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
@@ -184,7 +184,7 @@ public class CustomerRoomSearchPanel extends JPanel {
         lblResultsCount.setForeground(Color.GRAY);
         bar.add(lblResultsCount, BorderLayout.WEST);
 
-        btnBookNow = new JButton("⚡ Book Selected Room (5-Min Reservation)");
+        btnBookNow = new JButton("Book Selected Room");
         btnBookNow.setEnabled(false);
         btnBookNow.setBackground(new Color(39, 174, 96));
         btnBookNow.setForeground(Color.WHITE);
@@ -250,7 +250,7 @@ public class CustomerRoomSearchPanel extends JPanel {
                                 r.getRoomNumber(),
                                 r.getRoomType(),
                                 r.getCapacity() + " guests",
-                                "₹" + r.getPricePerNight().setScale(2, RoundingMode.HALF_UP),
+                                "Rs. " + r.getPricePerNight().setScale(2, RoundingMode.HALF_UP),
                                 r.getAmenities() != null ? r.getAmenities() : "Standard amenities"
                         });
                     }

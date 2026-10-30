@@ -147,7 +147,7 @@ public class BillCalculator {
      */
     public static void validatePaymentAmount(BigDecimal paymentAmount, BigDecimal balanceDue) {
         if (paymentAmount == null || paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Payment amount must be greater than ₹0.00.");
+            throw new IllegalArgumentException("Payment amount must be greater than Rs. 0.00.");
         }
         if (balanceDue == null) {
             balanceDue = BigDecimal.ZERO;
@@ -157,8 +157,8 @@ public class BillCalculator {
         BigDecimal roundedBalance = balanceDue.setScale(MONEY_SCALE, ROUNDING_MODE);
 
         if (roundedAmount.compareTo(roundedBalance) > 0) {
-            throw new IllegalArgumentException("Overpayment not allowed: Payment amount (₹" 
-                    + roundedAmount + ") exceeds outstanding balance (₹" + roundedBalance + ").");
+            throw new IllegalArgumentException("Overpayment not allowed: Payment amount (Rs. " 
+                    + roundedAmount + ") exceeds outstanding balance (Rs. " + roundedBalance + ").");
         }
     }
 

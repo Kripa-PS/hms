@@ -103,6 +103,6 @@ public class Room {
 
     @Override
     public String toString() {
-        return "Room " + roomNumber + " (" + roomType + ", ₹" + pricePerNight + "/night)";
+        return "Room " + roomNumber + " (" + roomType + ", Rs. " + pricePerNight + "/night)";
     }
 }

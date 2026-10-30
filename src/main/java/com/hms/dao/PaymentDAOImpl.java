@@ -33,7 +33,7 @@ public class PaymentDAOImpl implements PaymentDAO {
             throw new IllegalArgumentException("Invalid booking ID for payment: " + payment.getBookingId());
         }
         if (payment.getAmount() == null || payment.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Payment amount must be greater than ₹0.00.");
+            throw new IllegalArgumentException("Payment amount must be greater than Rs. 0.00.");
         }
 
         // Auto-generate transaction reference if not provided
@@ -104,8 +104,8 @@ public class PaymentDAOImpl implements PaymentDAO {
                 BigDecimal submittingAmount = payment.getAmount().setScale(2, RoundingMode.HALF_UP);
                 if (submittingAmount.compareTo(balanceDue) > 0) {
                     conn.rollback();
-                    throw new OverpaymentException("Overpayment blocked: Payment amount (₹" + submittingAmount 
-                            + ") exceeds remaining balance (₹" + balanceDue + ") for this booking.");
+                    throw new OverpaymentException("Overpayment blocked: Payment amount (Rs. " + submittingAmount 
+                            + ") exceeds remaining balance (Rs. " + balanceDue + ") for this booking.");
                 }
             }
 

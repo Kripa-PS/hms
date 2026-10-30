@@ -230,7 +230,7 @@ public class GuestManagementPanel extends JPanel {
         JPanel guestActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
         guestActions.setOpaque(false);
 
-        btnBookForGuest = new JButton("📅 Book for Guest");
+        btnBookForGuest = new JButton("Book for Guest");
         btnBookForGuest.setEnabled(false);
         btnBookForGuest.setBackground(new Color(24, 43, 73));
         btnBookForGuest.setForeground(Color.WHITE);
@@ -239,7 +239,7 @@ public class GuestManagementPanel extends JPanel {
         btnBookForGuest.addActionListener(e -> triggerBookForGuest());
         guestActions.add(btnBookForGuest);
 
-        btnViewGuestBookings = new JButton("📋 View Guest Bookings");
+        btnViewGuestBookings = new JButton("View Guest Bookings");
         btnViewGuestBookings.setEnabled(false);
         btnViewGuestBookings.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnViewGuestBookings.addActionListener(e -> triggerViewGuestBookings());

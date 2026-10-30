@@ -67,10 +67,10 @@ public class LoginFrame extends JFrame {
         tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
         JPanel signInPanel = createSignInPanel();
-        tabbedPane.addTab("🔑 Sign In", signInPanel);
+        tabbedPane.addTab("Sign In", signInPanel);
 
         JPanel registerPanel = createRegisterPanel();
-        tabbedPane.addTab("📝 Customer Registration", registerPanel);
+        tabbedPane.addTab("Customer Registration", registerPanel);
 
         add(tabbedPane, BorderLayout.CENTER);
 
@@ -408,7 +408,7 @@ public class LoginFrame extends JFrame {
                     boolean ok = get();
                     if (!ok) {
                         lblLoginStatus.setForeground(new Color(192, 57, 43));
-                        lblLoginStatus.setText("● Database Offline (Check MySQL Server)");
+                        lblLoginStatus.setText("Database: Offline (Check MySQL Server)");
                     }
                 } catch (Exception e) {
                     // Ignore

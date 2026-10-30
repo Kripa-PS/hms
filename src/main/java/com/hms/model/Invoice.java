@@ -268,7 +268,7 @@ public class Invoice {
     @Override
     public String toString() {
         return "Invoice[" + invoiceNumber + ", Booking=" + bookingId + " (" + bookingReference 
-                + "), Guest=" + guestName + ", Total=₹" + totalAmount + ", Paid=₹" + paidAmount 
-                + ", Balance=₹" + balanceDue + "]";
+                + "), Guest=" + guestName + ", Total=Rs. " + totalAmount + ", Paid=Rs. " + paidAmount 
+                + ", Balance=Rs. " + balanceDue + "]";
     }
 }

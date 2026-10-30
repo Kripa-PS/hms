@@ -64,7 +64,10 @@ public class RoomHoldManagementTest {
         System.out.println("READY (Guest ID: " + testGuest.getId() + ", Rooms: " + testRoom.getRoomNumber() + ", " + testRoom2.getRoomNumber() + ")");
 
         // Base future dates with random offset to avoid collisions with bookings from previous test runs
-        LocalDate baseIn = LocalDate.now().plusDays(150 + (int)(Math.random() * 600));
+        LocalDate baseIn = LocalDate.now().plusDays(300 + (int)(Math.random() * 1000));
+        while (!bookingDAO.isRoomAvailable(testRoom.getId(), baseIn, baseIn.plusDays(10))) {
+            baseIn = baseIn.plusDays(10);
+        }
         LocalDate baseOut = baseIn.plusDays(3);
 
         // TEST 1: Hold creation & 5-minute expiry

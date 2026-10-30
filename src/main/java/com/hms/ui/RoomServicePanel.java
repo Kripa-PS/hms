@@ -66,7 +66,7 @@ public class RoomServicePanel extends JPanel {
         form.add(tfItem);
         form.add(new JLabel("Qty:"));
         form.add(spQuantity);
-        form.add(new JLabel("Unit price (\u20B9):"));
+        form.add(new JLabel("Unit price (Rs.):"));
         form.add(tfPrice);
         form.add(btnAdd);
         return form;

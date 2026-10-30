@@ -19,13 +19,16 @@ import java.awt.event.ActionEvent;
  * - Bookings (Assigned Module)
  * - Rooms (Member 2 - Room Management Module)
  * - Billing (Assigned Module)
- * - Services (Teammate Placeholder)
+ * - Services: Housekeeping and Room Service (Member 4)
+ * - Dashboard home screen with live service summary (Member 4)
  */
 public class MainAppFrame extends JFrame {
 
     private final CardLayout cardLayout;
     private final JPanel contentPanel;
     private final JLabel dbStatusLabel;
+    private ServicesPanel servicesPanel;           // Member 4
+    private DashboardStatsPanel dashboardStats;    // Member 4
 
     public MainAppFrame() {
         setTitle("Hotel Management System - BTech CSE Mini-Project");
@@ -62,8 +65,9 @@ public class MainAppFrame extends JFrame {
         // Billing module
         BillingAndReportsPanel billingAndReportsPanel = new BillingAndReportsPanel();
         contentPanel.add(billingAndReportsPanel, "BILLING");
-        contentPanel.add(createPlaceholderPanel("Hotel Services",
-                "Teammate Module: Housekeeping tasks and room service orders."), "SERVICES");
+        // Member 4: Housekeeping and Room Service module
+        servicesPanel = new ServicesPanel();
+        contentPanel.add(servicesPanel, "SERVICES");
 
         add(contentPanel, BorderLayout.CENTER);
 
@@ -86,6 +90,7 @@ public class MainAppFrame extends JFrame {
 
         // Asynchronously check DB status so UI opens instantly without freeze
         checkDatabaseStatusAsync();
+        dashboardStats.refresh();
     }
 
     private JPanel createHeaderPanel() {
@@ -157,8 +162,20 @@ public class MainAppFrame extends JFrame {
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.addActionListener((ActionEvent e) -> cardLayout.show(contentPanel, cardName));
+        btn.addActionListener((ActionEvent e) -> {
+            cardLayout.show(contentPanel, cardName);
+            onScreenShown(cardName);
+        });
         return btn;
+    }
+
+    /** Reloads data for screens that show live numbers each time they are opened. */
+    private void onScreenShown(String cardName) {
+        if ("WELCOME".equals(cardName)) {
+            dashboardStats.refresh();
+        } else if ("SERVICES".equals(cardName)) {
+            servicesPanel.refresh();
+        }
     }
 
     private JPanel createWelcomePanel() {
@@ -195,6 +212,12 @@ public class MainAppFrame extends JFrame {
         cardsGrid.add(createSummaryBox("System Architecture", "Shared MySQL database, JDBC PreparedStatements, and clean OOP design.", new Color(142, 68, 173)));
 
         content.add(cardsGrid);
+
+        // Member 4: live housekeeping / room-service numbers
+        content.add(Box.createVerticalStrut(15));
+        dashboardStats = new DashboardStatsPanel();
+        dashboardStats.setMaximumSize(new Dimension(900, 110));
+        content.add(dashboardStats);
 
         panel.add(content, BorderLayout.NORTH);
         return panel;

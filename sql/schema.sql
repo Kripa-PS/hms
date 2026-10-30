@@ -7,15 +7,17 @@
 CREATE DATABASE IF NOT EXISTS hotel_management;
 USE hotel_management;
 
--- 1. STAFF USERS (Shared authentication for Admin and Receptionist)
+-- 1. USERS (Authentication for Admin, Receptionist, and Customers)
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
-    role ENUM('ADMIN', 'RECEPTIONIST') NOT NULL DEFAULT 'RECEPTIONIST',
+    role ENUM('ADMIN', 'RECEPTIONIST', 'CUSTOMER') NOT NULL DEFAULT 'CUSTOMER',
+    guest_id INT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_guest (guest_id)
 ) ENGINE=InnoDB;
 
 -- 2. ROOMS (Maintained by Teammate: Room Management)

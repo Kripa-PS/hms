@@ -3,6 +3,7 @@ package com.hms.dao;
 import com.hms.model.Invoice;
 import com.hms.util.BillCalculator;
 import com.hms.util.DatabaseConnection;
+import com.hms.util.UserSession;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,12 +22,13 @@ import java.util.Optional;
  * - PreparedStatements for safe querying and upserting into the 'invoices' table
  * - Hydrates complete invoice metadata including guest, room, stay dates, and payment history
  * - Automatic calculation of nights, charges, amount paid, and balance due
+ * - Enforces customer data isolation: customers can only view their own invoices
  */
 public class InvoiceDAOImpl implements InvoiceDAO {
 
     @Override
     public Invoice generateInvoice(int bookingId, String notes) {
-        String bookingSql = "SELECT b.id AS booking_id, b.booking_reference, b.check_in_date, b.check_out_date, "
+        String bookingSql = "SELECT b.id AS booking_id, b.booking_reference, b.guest_id, b.check_in_date, b.check_out_date, "
                           + "       b.total_amount, b.status AS booking_status, "
                           + "       g.full_name AS guest_name, g.phone AS guest_phone, g.email AS guest_email, g.address AS guest_address, "
                           + "       r.room_number, r.room_type, r.price_per_night "
@@ -49,12 +51,14 @@ public class InvoiceDAOImpl implements InvoiceDAO {
         try (Connection conn = DatabaseConnection.getConnection()) {
             // 1. Fetch booking & guest & room details
             Invoice invoice = new Invoice();
+            int guestId = -1;
             try (PreparedStatement stmt = conn.prepareStatement(bookingSql)) {
                 stmt.setInt(1, bookingId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (!rs.next()) {
                         throw new IllegalArgumentException("Booking not found with ID: " + bookingId);
                     }
+                    guestId = rs.getInt("guest_id");
                     invoice.setBookingId(rs.getInt("booking_id"));
                     invoice.setBookingReference(rs.getString("booking_reference"));
                     invoice.setCheckInDate(rs.getDate("check_in_date").toLocalDate());
@@ -68,6 +72,11 @@ public class InvoiceDAOImpl implements InvoiceDAO {
                     invoice.setRoomType(rs.getString("room_type"));
                     invoice.setRatePerNight(rs.getBigDecimal("price_per_night"));
                 }
+            }
+
+            // Enforce customer access restriction
+            if (UserSession.isCustomer()) {
+                UserSession.enforceGuestAccess(guestId);
             }
 
             // 2. Compute nights and room charges
@@ -176,7 +185,7 @@ public class InvoiceDAOImpl implements InvoiceDAO {
     public Optional<Invoice> findInvoiceByBookingId(int bookingId) {
         String sql = "SELECT i.id, i.invoice_number, i.booking_id, i.issue_date, i.total_amount, i.paid_amount, "
                    + "       i.balance_due, i.notes, "
-                   + "       b.booking_reference, b.check_in_date, b.check_out_date, "
+                   + "       b.booking_reference, b.guest_id, b.check_in_date, b.check_out_date, "
                    + "       g.full_name AS guest_name, g.phone AS guest_phone, g.email AS guest_email, g.address AS guest_address, "
                    + "       r.room_number, r.room_type, r.price_per_night "
                    + "FROM invoices i "
@@ -185,14 +194,30 @@ public class InvoiceDAOImpl implements InvoiceDAO {
                    + "JOIN rooms r ON b.room_id = r.id "
                    + "WHERE i.booking_id = ?";
 
-        return querySingleInvoice(sql, bookingId, false);
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, bookingId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int guestId = rs.getInt("guest_id");
+                    if (UserSession.isCustomer()) {
+                        UserSession.enforceGuestAccess(guestId);
+                    }
+                    return Optional.of(mapResultSetToInvoice(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[InvoiceDAO] Error querying invoice: " + e.getMessage());
+        }
+        return Optional.empty();
     }
 
     @Override
     public Optional<Invoice> findInvoiceByNumber(String invoiceNumber) {
         String sql = "SELECT i.id, i.invoice_number, i.booking_id, i.issue_date, i.total_amount, i.paid_amount, "
                    + "       i.balance_due, i.notes, "
-                   + "       b.booking_reference, b.check_in_date, b.check_out_date, "
+                   + "       b.booking_reference, b.guest_id, b.check_in_date, b.check_out_date, "
                    + "       g.full_name AS guest_name, g.phone AS guest_phone, g.email AS guest_email, g.address AS guest_address, "
                    + "       r.room_number, r.room_type, r.price_per_night "
                    + "FROM invoices i "
@@ -201,11 +226,31 @@ public class InvoiceDAOImpl implements InvoiceDAO {
                    + "JOIN rooms r ON b.room_id = r.id "
                    + "WHERE i.invoice_number = ?";
 
-        return querySingleInvoice(sql, invoiceNumber, true);
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, invoiceNumber.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int guestId = rs.getInt("guest_id");
+                    if (UserSession.isCustomer()) {
+                        UserSession.enforceGuestAccess(guestId);
+                    }
+                    return Optional.of(mapResultSetToInvoice(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[InvoiceDAO] Error querying invoice by number: " + e.getMessage());
+        }
+        return Optional.empty();
     }
 
     @Override
     public List<Invoice> findAllInvoices() {
+        if (UserSession.isCustomer()) {
+            throw new SecurityException("Access Denied: Customers cannot view all system invoices.");
+        }
+
         List<Invoice> list = new ArrayList<>();
         String sql = "SELECT i.id, i.invoice_number, i.booking_id, i.issue_date, i.total_amount, i.paid_amount, "
                    + "       i.balance_due, i.notes, "
@@ -231,25 +276,36 @@ public class InvoiceDAOImpl implements InvoiceDAO {
         return list;
     }
 
-    private Optional<Invoice> querySingleInvoice(String sql, Object param, boolean isString) {
+    @Override
+    public List<Invoice> findInvoicesByGuestId(int guestId) {
+        UserSession.enforceGuestAccess(guestId);
+
+        List<Invoice> list = new ArrayList<>();
+        String sql = "SELECT i.id, i.invoice_number, i.booking_id, i.issue_date, i.total_amount, i.paid_amount, "
+                   + "       i.balance_due, i.notes, "
+                   + "       b.booking_reference, b.check_in_date, b.check_out_date, "
+                   + "       g.full_name AS guest_name, g.phone AS guest_phone, g.email AS guest_email, g.address AS guest_address, "
+                   + "       r.room_number, r.room_type, r.price_per_night "
+                   + "FROM invoices i "
+                   + "JOIN bookings b ON i.booking_id = b.id "
+                   + "JOIN guests g ON b.guest_id = g.id "
+                   + "JOIN rooms r ON b.room_id = r.id "
+                   + "WHERE b.guest_id = ? "
+                   + "ORDER BY i.issue_date DESC, i.id DESC";
+
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            if (isString) {
-                stmt.setString(1, (String) param);
-            } else {
-                stmt.setInt(1, (Integer) param);
-            }
-
+            stmt.setInt(1, guestId);
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapResultSetToInvoice(rs));
+                while (rs.next()) {
+                    list.add(mapResultSetToInvoice(rs));
                 }
             }
         } catch (SQLException e) {
-            System.err.println("[InvoiceDAO] Error querying invoice: " + e.getMessage());
+            System.err.println("[InvoiceDAO] Error finding invoices by guest id: " + e.getMessage());
         }
-        return Optional.empty();
+        return list;
     }
 
     private Invoice mapResultSetToInvoice(ResultSet rs) throws SQLException {

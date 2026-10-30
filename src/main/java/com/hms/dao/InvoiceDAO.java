@@ -31,6 +31,10 @@ public interface InvoiceDAO {
      */
     Optional<Invoice> findInvoiceByBookingId(int bookingId);
 
+    default Optional<Invoice> findByBookingId(int bookingId) {
+        return findInvoiceByBookingId(bookingId);
+    }
+
     /**
      * Finds an invoice by its unique invoice number (e.g. INV-2026-1001).
      * 
@@ -45,4 +49,12 @@ public interface InvoiceDAO {
      * @return list of invoices
      */
     List<Invoice> findAllInvoices();
+
+    /**
+     * Retrieves all invoices for a specific guest, enforcing customer data isolation.
+     * 
+     * @param guestId target guest ID
+     * @return list of invoices for the guest
+     */
+    List<Invoice> findInvoicesByGuestId(int guestId);
 }

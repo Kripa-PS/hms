@@ -708,6 +708,50 @@ public class BookingManagementPanel extends JPanel {
         loadBookingsAsync(null);
     }
 
+    public void selectGuest(int guestId) {
+        for (int i = 0; i < guestCombo.getItemCount(); i++) {
+            GuestItem item = guestCombo.getItemAt(i);
+            if (item != null && item.guest.getId() == guestId) {
+                guestCombo.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
+    public void showBookingsForGuest(int guestId, String guestName) {
+        SwingWorker<List<Booking>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Booking> doInBackground() {
+                return bookingDAO.findBookingsByGuestId(guestId);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<Booking> list = get();
+                    tableModel.setRowCount(0);
+                    for (Booking b : list) {
+                        tableModel.addRow(new Object[]{
+                                b.getBookingReference(),
+                                (b.getGuestName() != null) ? b.getGuestName() : (guestName != null ? guestName : ("Guest #" + b.getGuestId())),
+                                (b.getGuestPhone() != null) ? b.getGuestPhone() : "-",
+                                (b.getRoomNumber() != null) ? b.getRoomNumber() : ("Room #" + b.getRoomId()),
+                                (b.getRoomType() != null) ? b.getRoomType() : "-",
+                                b.getCheckInDate(),
+                                b.getCheckOutDate(),
+                                b.getGuestCount(),
+                                (b.getTotalAmount() != null) ? b.getTotalAmount().toPlainString() : "0.00",
+                                b.getStatus()
+                        });
+                    }
+                } catch (Exception e) {
+                    System.err.println("[BookingManagementPanel] Could not load guest bookings: " + e.getMessage());
+                }
+            }
+        };
+        worker.execute();
+    }
+
     private void loadGuestsComboAsync() {
         SwingWorker<List<Guest>, Void> worker = new SwingWorker<>() {
             @Override

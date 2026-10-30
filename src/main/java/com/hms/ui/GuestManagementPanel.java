@@ -40,6 +40,12 @@ public class GuestManagementPanel extends JPanel {
     private JButton btnAdd;
     private JButton btnUpdate;
     private JButton btnClear;
+    private JButton btnBookForGuest;
+    private JButton btnViewGuestBookings;
+
+    // Navigation callbacks
+    private java.util.function.Consumer<Guest> onBookForGuest;
+    private java.util.function.Consumer<Guest> onViewGuestBookings;
 
     // Search bar
     private JTextField searchField;
@@ -220,7 +226,59 @@ public class GuestManagementPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(guestTable);
         panel.add(scrollPane, BorderLayout.CENTER);
 
+        // Action bar for selected guest
+        JPanel guestActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
+        guestActions.setOpaque(false);
+
+        btnBookForGuest = new JButton("📅 Book for Guest");
+        btnBookForGuest.setEnabled(false);
+        btnBookForGuest.setBackground(new Color(24, 43, 73));
+        btnBookForGuest.setForeground(Color.WHITE);
+        btnBookForGuest.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnBookForGuest.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnBookForGuest.addActionListener(e -> triggerBookForGuest());
+        guestActions.add(btnBookForGuest);
+
+        btnViewGuestBookings = new JButton("📋 View Guest Bookings");
+        btnViewGuestBookings.setEnabled(false);
+        btnViewGuestBookings.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnViewGuestBookings.addActionListener(e -> triggerViewGuestBookings());
+        guestActions.add(btnViewGuestBookings);
+
+        panel.add(guestActions, BorderLayout.SOUTH);
+
         return panel;
+    }
+
+    public void setOnBookForGuest(java.util.function.Consumer<Guest> callback) {
+        this.onBookForGuest = callback;
+    }
+
+    public void setOnViewGuestBookings(java.util.function.Consumer<Guest> callback) {
+        this.onViewGuestBookings = callback;
+    }
+
+    private Guest getSelectedGuest() {
+        if (selectedGuestId <= 0) return null;
+        Guest g = new Guest(nameField.getText().trim(), phoneField.getText().trim(),
+                emailField.getText().trim(), (String) idProofCombo.getSelectedItem(),
+                idNumberField.getText().trim(), addressField.getText().trim());
+        g.setId(selectedGuestId);
+        return g;
+    }
+
+    private void triggerBookForGuest() {
+        Guest g = getSelectedGuest();
+        if (g != null && onBookForGuest != null) {
+            onBookForGuest.accept(g);
+        }
+    }
+
+    private void triggerViewGuestBookings() {
+        Guest g = getSelectedGuest();
+        if (g != null && onViewGuestBookings != null) {
+            onViewGuestBookings.accept(g);
+        }
     }
 
     private void onTableRowSelected() {
@@ -236,6 +294,8 @@ public class GuestManagementPanel extends JPanel {
 
             btnAdd.setEnabled(false);
             btnUpdate.setEnabled(true);
+            btnBookForGuest.setEnabled(true);
+            btnViewGuestBookings.setEnabled(true);
         }
     }
 
@@ -341,6 +401,8 @@ public class GuestManagementPanel extends JPanel {
         guestTable.clearSelection();
         btnAdd.setEnabled(true);
         btnUpdate.setEnabled(false);
+        if (btnBookForGuest != null) btnBookForGuest.setEnabled(false);
+        if (btnViewGuestBookings != null) btnViewGuestBookings.setEnabled(false);
     }
 
     /**

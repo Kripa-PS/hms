@@ -51,7 +51,7 @@ public class RoomHoldManagementTest {
         // Setup test guest and test room
         System.out.print("[Setup] Preparing test guest and rooms... ");
         String testPhone = "97777" + (int)(Math.random() * 90000 + 10000);
-        Guest testGuest = new Guest("Hold Test Guest", testPhone, "hold@test.com", "Passport", "P12345", "Ernakulam");
+        Guest testGuest = new Guest("Hold Test Guest", testPhone, "hold@test.com", "Passport", "P1234567", "Ernakulam");
         guestDAO.addGuest(testGuest);
 
         List<Room> rooms = roomDAO.findOperationallyAvailableRooms();

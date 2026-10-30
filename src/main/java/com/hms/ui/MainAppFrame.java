@@ -1,7 +1,9 @@
 package com.hms.ui;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.hms.model.User;
 import com.hms.util.DatabaseConnection;
+import com.hms.util.UserSession;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -56,6 +58,14 @@ public class MainAppFrame extends JFrame {
         contentPanel.add(guestManagementPanel, "GUESTS");
         BookingManagementPanel bookingManagementPanel = new BookingManagementPanel();
         contentPanel.add(bookingManagementPanel, "BOOKINGS");
+        guestManagementPanel.setOnBookForGuest(guest -> {
+            cardLayout.show(contentPanel, "BOOKINGS");
+            bookingManagementPanel.selectGuest(guest.getId());
+        });
+        guestManagementPanel.setOnViewGuestBookings(guest -> {
+            cardLayout.show(contentPanel, "BOOKINGS");
+            bookingManagementPanel.showBookingsForGuest(guest.getId(), guest.getFullName());
+        });
         // Member 2: Room Management module
         RoomManagementPanel roomManagementPanel = new RoomManagementPanel();
         contentPanel.add(roomManagementPanel, "ROOMS");
@@ -107,6 +117,29 @@ public class MainAppFrame extends JFrame {
         textPanel.add(subtitleLabel);
 
         panel.add(textPanel, BorderLayout.WEST);
+
+        // Right side: Logged in user info & Logout
+        JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 4));
+        userPanel.setOpaque(false);
+
+        User currentUser = UserSession.getCurrentUser();
+        String roleStr = currentUser != null ? (" (" + currentUser.getRole() + ")") : " (STAFF)";
+        String nameStr = currentUser != null ? currentUser.getFullName() : "Administrator";
+
+        JLabel lblUser = new JLabel("👤 " + nameStr + roleStr);
+        lblUser.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblUser.setForeground(Color.WHITE);
+        userPanel.add(lblUser);
+
+        JButton btnLogout = new JButton("🚪 Logout");
+        btnLogout.setBackground(new Color(192, 57, 43));
+        btnLogout.setForeground(Color.WHITE);
+        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLogout.addActionListener(this::onLogout);
+        userPanel.add(btnLogout);
+
+        panel.add(userPanel, BorderLayout.EAST);
 
         return panel;
     }
@@ -277,6 +310,20 @@ public class MainAppFrame extends JFrame {
         } else {
             dbStatusLabel.setText("\u25cf Database: Offline (MySQL Not Running)");
             dbStatusLabel.setForeground(new Color(180, 40, 40)); // Crimson red
+        }
+    }
+
+    private void onLogout(ActionEvent e) {
+        int res = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to log out of the Management Portal?",
+                "Confirm Logout", JOptionPane.YES_NO_OPTION);
+        if (res == JOptionPane.YES_OPTION) {
+            UserSession.logout();
+            dispose();
+            SwingUtilities.invokeLater(() -> {
+                LoginFrame loginFrame = new LoginFrame();
+                loginFrame.setVisible(true);
+            });
         }
     }
 

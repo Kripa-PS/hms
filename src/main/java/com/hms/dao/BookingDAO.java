@@ -87,6 +87,15 @@ public interface BookingDAO {
     Optional<Booking> findByReference(String bookingReference);
 
     /**
+     * Retrieves all bookings associated with a specific guest ID.
+     * Enforces customer data isolation: customers can only query their own bookings.
+     * 
+     * @param guestId Target guest ID
+     * @return List of bookings for the guest
+     */
+    List<Booking> findBookingsByGuestId(int guestId);
+
+    /**
      * Thrown when an overlapping booking conflicts with the requested room and dates.
      */
     class BookingOverlapException extends RuntimeException {

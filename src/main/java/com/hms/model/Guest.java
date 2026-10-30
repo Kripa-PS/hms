@@ -50,8 +50,44 @@ public class Guest {
 
     // Validation helper
     public boolean isValid() {
-        return fullName != null && !fullName.trim().isEmpty() 
-            && phone != null && !phone.trim().isEmpty();
+        if (fullName == null || fullName.trim().isEmpty() || phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+        if (!com.hms.util.ValidationUtil.validatePhone(phone).isValid()) {
+            return false;
+        }
+        if (email != null && !email.trim().isEmpty() && !com.hms.util.ValidationUtil.validateEmail(email, false).isValid()) {
+            return false;
+        }
+        if (idProofNumber != null && !idProofNumber.trim().isEmpty() && !com.hms.util.ValidationUtil.validateIdProof(idProofType, idProofNumber, false).isValid()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validates guest model throwing IllegalArgumentException on failure.
+     */
+    public void validate() {
+        if (fullName == null || fullName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Full Name is required.");
+        }
+        com.hms.util.ValidationUtil.ValidationResult phoneRes = com.hms.util.ValidationUtil.validatePhone(phone);
+        if (!phoneRes.isValid()) {
+            throw new IllegalArgumentException(phoneRes.getMessage());
+        }
+        if (email != null && !email.trim().isEmpty()) {
+            com.hms.util.ValidationUtil.ValidationResult emailRes = com.hms.util.ValidationUtil.validateEmail(email, false);
+            if (!emailRes.isValid()) {
+                throw new IllegalArgumentException(emailRes.getMessage());
+            }
+        }
+        if (idProofNumber != null && !idProofNumber.trim().isEmpty()) {
+            com.hms.util.ValidationUtil.ValidationResult idRes = com.hms.util.ValidationUtil.validateIdProof(idProofType, idProofNumber, false);
+            if (!idRes.isValid()) {
+                throw new IllegalArgumentException(idRes.getMessage());
+            }
+        }
     }
 
     // Getters and Setters

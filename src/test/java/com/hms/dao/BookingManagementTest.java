@@ -47,7 +47,7 @@ public class BookingManagementTest {
         // Setup test guest and test room
         System.out.print("[Setup] Preparing test guest and room... ");
         String testPhone = "98888" + (int)(Math.random() * 90000 + 10000);
-        Guest testGuest = new Guest("Test Guest " + System.currentTimeMillis(), testPhone, "test@hotel.com", "Aadhaar", "1234", "Kochi");
+        Guest testGuest = new Guest("Test Guest " + System.currentTimeMillis(), testPhone, "test@hotel.com", "Aadhaar", "1234-5678-9012", "Kochi");
         guestDAO.addGuest(testGuest);
 
         List<Room> rooms = roomDAO.findOperationallyAvailableRooms();

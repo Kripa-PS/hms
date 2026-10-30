@@ -28,6 +28,7 @@ public class ReportDAOImpl implements ReportDAO {
 
     @Override
     public List<BookingReportItem> generateBookingReport(LocalDate startDate, LocalDate endDate, String statusFilter) {
+        if (com.hms.util.UserSession.isCustomer()) throw new SecurityException("Access Denied: Reports are restricted to administrators.");
         List<BookingReportItem> list = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder(
@@ -92,6 +93,7 @@ public class ReportDAOImpl implements ReportDAO {
 
     @Override
     public OccupancyReport generateOccupancyReport(LocalDate targetDate) {
+        if (com.hms.util.UserSession.isCustomer()) throw new SecurityException("Access Denied: Reports are restricted to administrators.");
         if (targetDate == null) {
             targetDate = LocalDate.now();
         }
@@ -168,6 +170,7 @@ public class ReportDAOImpl implements ReportDAO {
 
     @Override
     public RevenueReport generateRevenueReport(LocalDate startDate, LocalDate endDate) {
+        if (com.hms.util.UserSession.isCustomer()) throw new SecurityException("Access Denied: Reports are restricted to administrators.");
         if (startDate == null) startDate = LocalDate.now().minusDays(30);
         if (endDate == null) endDate = LocalDate.now();
 

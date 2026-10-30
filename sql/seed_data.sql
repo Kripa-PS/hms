@@ -20,12 +20,11 @@ VALUES
 ON DUPLICATE KEY UPDATE operational_status = VALUES(operational_status);
 
 -- 2. SEED STAFF USERS (Passwords hashed using standard BCrypt for 'admin123' and 'recep123')
--- '$2a$10$wT3Qy3qLqLh2uL7qW1Y6rOYJ0Cj.3K9lE1a0v.UeM0DkM2oJjZgK.' is hash for 'admin123'
 INSERT INTO users (username, password_hash, full_name, role, active)
 VALUES
-    ('admin', '$2a$10$wT3Qy3qLqLh2uL7qW1Y6rOYJ0Cj.3K9lE1a0v.UeM0DkM2oJjZgK.', 'System Administrator', 'ADMIN', TRUE),
-    ('receptionist', '$2a$10$wT3Qy3qLqLh2uL7qW1Y6rOYJ0Cj.3K9lE1a0v.UeM0DkM2oJjZgK.', 'Front Desk Receptionist', 'RECEPTIONIST', TRUE)
-ON DUPLICATE KEY UPDATE full_name = VALUES(full_name);
+    ('admin', '$2a$10$KBeUrIki0OCkSksLfwsS7uaOS5VmY3gSboCjjLRFFXjNpr3aewvLe', 'System Administrator', 'ADMIN', TRUE),
+    ('receptionist', '$2a$10$5SiTf6u0O7VtZcLQOMFOYO86lZ4vCvuSrMr0UfOVM25KarEPClfWC', 'Front Desk Receptionist', 'RECEPTIONIST', TRUE)
+ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), full_name = VALUES(full_name);
 
 -- 3. SEED SAMPLE GUESTS
 INSERT INTO guests (full_name, phone, email, id_proof_type, id_proof_number, address)

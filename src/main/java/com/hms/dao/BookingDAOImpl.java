@@ -416,13 +416,49 @@ public class BookingDAOImpl implements BookingDAO {
             stmt.setString(1, bookingReference.trim());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapResultSetToBooking(rs));
+                    Booking b = mapResultSetToBooking(rs);
+                    // If customer session is active, verify they own this booking
+                    if (com.hms.util.UserSession.isCustomer()) {
+                        com.hms.util.UserSession.enforceGuestAccess(b.getGuestId());
+                    }
+                    return Optional.of(b);
                 }
             }
         } catch (SQLException e) {
             System.err.println("[BookingDAO] Error finding booking by reference: " + e.getMessage());
         }
         return Optional.empty();
+    }
+
+    @Override
+    public List<Booking> findBookingsByGuestId(int guestId) {
+        // Enforce customer access restriction in backend
+        com.hms.util.UserSession.enforceGuestAccess(guestId);
+
+        List<Booking> list = new ArrayList<>();
+        String sql = "SELECT b.id, b.booking_reference, b.guest_id, b.room_id, b.check_in_date, b.check_out_date, "
+                   + "       b.guest_count, b.status, b.total_amount, b.created_at, b.updated_at, b.cancelled_at, "
+                   + "       g.full_name AS guest_name, g.phone AS guest_phone, "
+                   + "       r.room_number, r.room_type "
+                   + "FROM bookings b "
+                   + "JOIN guests g ON b.guest_id = g.id "
+                   + "JOIN rooms r ON b.room_id = r.id "
+                   + "WHERE b.guest_id = ? "
+                   + "ORDER BY b.id DESC";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, guestId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToBooking(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[BookingDAO] Error finding bookings by guest id: " + e.getMessage());
+        }
+        return list;
     }
 
     private Booking mapResultSetToBooking(ResultSet rs) throws SQLException {

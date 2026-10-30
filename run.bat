@@ -8,5 +8,5 @@ if not exist %JAVA_CMD% (
     set JAVA_CMD=java
 )
 
-%JAVA_CMD% --enable-native-access=ALL-UNNAMED -cp "bin;lib/mysql-connector-j-9.1.0.jar;lib/flatlaf-3.5.4.jar" com.hms.Main
+%JAVA_CMD% --enable-native-access=ALL-UNNAMED -cp "bin;lib/mysql-connector-j-9.1.0.jar;lib/flatlaf-3.5.4.jar;lib/jbcrypt-0.4.jar" com.hms.Main
 pause

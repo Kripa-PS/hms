@@ -22,6 +22,19 @@ public class GuestDAOImpl implements GuestDAO {
 
     @Override
     public boolean addGuest(Guest guest) {
+        if (guest == null) {
+            throw new IllegalArgumentException("Guest cannot be null.");
+        }
+
+        // Check duplicate phone first to provide immediate domain exception
+        if (guest.getPhone() != null && !guest.getPhone().isBlank()) {
+            if (findByPhone(guest.getPhone().trim()).isPresent()) {
+                throw new DuplicatePhoneException("A guest with phone '" + guest.getPhone().trim() + "' is already registered.");
+            }
+        }
+
+        guest.validate();
+
         String sql = "INSERT INTO guests (full_name, phone, email, id_proof_type, id_proof_number, address) "
                    + "VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -137,6 +150,11 @@ public class GuestDAOImpl implements GuestDAO {
 
     @Override
     public boolean updateGuest(Guest guest) {
+        if (guest == null) {
+            throw new IllegalArgumentException("Guest cannot be null.");
+        }
+        guest.validate();
+
         String sql = "UPDATE guests SET full_name = ?, phone = ?, email = ?, id_proof_type = ?, "
                    + "id_proof_number = ?, address = ? WHERE id = ?";
 

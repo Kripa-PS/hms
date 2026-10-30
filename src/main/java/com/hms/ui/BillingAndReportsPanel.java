@@ -3,6 +3,7 @@ package com.hms.ui;
 import com.hms.dao.*;
 import com.hms.model.*;
 import com.hms.util.BillCalculator;
+import com.hms.util.InvoiceRenderer;
 import com.hms.util.DatabaseConnection;
 
 import javax.swing.*;
@@ -638,15 +639,13 @@ public class BillingAndReportsPanel extends JPanel {
         btnGenerateInvoice.addActionListener(e -> onGenerateInvoice());
         topBar.add(btnGenerateInvoice);
 
-        btnPrintInvoice = new JButton("Print / Export PDF");
+        btnPrintInvoice = new JButton("Download PDF");
+        btnPrintInvoice.setBackground(NAVY);
+        btnPrintInvoice.setForeground(Color.WHITE);
+        btnPrintInvoice.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnPrintInvoice.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnPrintInvoice.addActionListener(e -> onPrintInvoice());
         topBar.add(btnPrintInvoice);
-
-        btnExportHtml = new JButton("Save HTML");
-        btnExportHtml.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnExportHtml.addActionListener(e -> onExportHtml());
-        topBar.add(btnExportHtml);
 
         panel.add(topBar, BorderLayout.NORTH);
 
@@ -746,18 +745,11 @@ public class BillingAndReportsPanel extends JPanel {
 
     private void onPrintInvoice() {
         if (currentPreviewInvoice == null) {
-            JOptionPane.showMessageDialog(this, "Please select or generate an invoice to print.", "No Invoice", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please select or generate an invoice to download as PDF.", "No Invoice", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        try {
-            boolean complete = invoicePreviewPane.print(null, null, true, null, null, true);
-            if (complete) {
-                JOptionPane.showMessageDialog(this, "Printing completed or sent to printer.", "Print Job Done", JOptionPane.INFORMATION_MESSAGE);
-            }
-        } catch (PrinterException e) {
-            JOptionPane.showMessageDialog(this, "Printing error: " + e.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
-        }
+        InvoiceRenderer.promptAndDownloadPdf(this, currentPreviewInvoice);
     }
 
     private void onExportHtml() {
